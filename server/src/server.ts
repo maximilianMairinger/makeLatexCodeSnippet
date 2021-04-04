@@ -2,6 +2,7 @@ import setup from "./setup"
 import puppeteer from "puppeteer"
 import delay from "delay"
 import merge from "deepmerge"
+import sharp from "sharp"
 
 
 const app = setup()
@@ -140,11 +141,34 @@ const render = async (source: string, options: {lang?: string, theme?: "dark" | 
   await page.keyboard.press("End")
   await page.keyboard.up("ControlLeft")
 
+  await delay(500)
+
+  const bounds = await page.evaluate((linesOfSource) => {
+    const rect = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor").getBoundingClientRect()
+    const lineBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs > div.lines-content.monaco-editor-background > div.view-lines")
+    const lines = lineBody.querySelectorAll("span")
+
+    let maxWidth = 0
+    lines.forEach((line) => {
+      if (maxWidth < line.offsetWidth) maxWidth = line.offsetWidth
+    })
+
+    let lineHeight = lines[0] ? lines[0].offsetHeight : 20
+    
+    return { 
+      top: rect.top,
+      left: rect.left,
+      width: maxWidth,
+      height: linesOfSource * lineHeight
+    }
+  }, linesOfSource)
+
 
   await delay(3000)
 
   await page.screenshot({path: 'tmp/screenshot.png'});
 
+  
 
   await delay(30000)
 
