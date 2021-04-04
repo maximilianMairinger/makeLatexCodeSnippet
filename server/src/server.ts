@@ -32,7 +32,7 @@ app.post("/echo", (req, res) => {
 
 
 (async () => {
-  const tempHash = await constrIncFileHash("temp", "screenshot", ".png")
+  const tempHash = await constrIncFileHash("tmp", "screenshot_", ".png")
   const endHash = await constrIncFileHash("public/renders/", nowStr, ".png")
 
   
@@ -66,13 +66,13 @@ app.post("/echo", (req, res) => {
 
     const linesOfSource = (() => {
       const matches = source.match("\n")
-      if (matches === null) return 0
-      else return matches.length
+      if (matches === null) return 1
+      else return matches.length + 1
     })()
 
     await page.setViewport({
       width: 1920,
-      height: 980 + (20 * linesOfSource),
+      height: 980 + (21 * linesOfSource),
       deviceScaleFactor: options.resolutionFactor
     });
     await page.goto('https://codesandbox.io/s/vanilla')
@@ -121,11 +121,11 @@ app.post("/echo", (req, res) => {
     
     await delay(1000)
 
-    await openCmdPallet()
-
-    await delay(200)
+    
 
     if (options.theme.toLowerCase().includes("light")) {
+      await openCmdPallet()
+      await delay(200)
       await type("preferences: color theme")
       await delay(1000)
       await page.keyboard.press('Enter')
@@ -135,7 +135,17 @@ app.post("/echo", (req, res) => {
       await page.keyboard.press('Enter')
     }
 
-    await delay(4000)
+    await delay(2000)
+
+    await openCmdPallet()
+
+    await delay(200)
+    await type("toggle word wrap")
+    await delay(1000)
+    await page.keyboard.press('Enter')
+    await delay(500)
+
+
 
 
     await page.evaluate((options) => {
@@ -172,14 +182,14 @@ app.post("/echo", (req, res) => {
     const bounds = await page.evaluate((linesOfSource, numbers) => {
       const rect = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor").getBoundingClientRect()
       const lineBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs > div.lines-content.monaco-editor-background > div.view-lines")
-      const lines = lineBody.querySelectorAll("span")
+      const lines = lineBody.querySelectorAll("div > span") as NodeListOf<HTMLElement>
 
       let maxWidth = 0
       lines.forEach((line) => {
         if (maxWidth < line.offsetWidth) maxWidth = line.offsetWidth
       })
 
-      let lineHeight = lines[0] ? lines[0].offsetHeight : 20
+      let lineHeight = lines[0] ? lines[0].offsetHeight : 21
 
       const numbersWidth = numbers ? (document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement).offsetWidth : 0
       
@@ -202,7 +212,7 @@ app.post("/echo", (req, res) => {
     
     const tempFilename = await tempHash()
 
-    await page.screenshot({path: `${tempFilename}.png`})
+    await page.screenshot({path: tempFilename})
     browser.close()
 
     const endFilename = await endHash()
@@ -212,6 +222,7 @@ app.post("/echo", (req, res) => {
 
 
 
+    
 
     
 
