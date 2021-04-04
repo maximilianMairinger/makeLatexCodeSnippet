@@ -3,6 +3,32 @@ import puppeteer from "puppeteer"
 import delay from "delay"
 import merge from "deepmerge"
 import sharp from "sharp"
+import uidHash from "uid-safe"
+import { promises as fs } from "fs"
+
+function nowStr() {
+  return new Date().toLocaleString("de-AT", { timeZone: "Europe/Vienna" })
+}
+
+function constrIncHash(prefix: string | (() => string), postfix: string | (() => string) = "", initCount = 0) {
+  let uid = initCount
+  return async function fileHash() {
+    return (prefix instanceof Function ? prefix() : prefix) + await uidHash(32) + (uid++).toString(36) + (postfix instanceof Function ? postfix() : postfix)
+  }
+}
+
+async function constrIncFileHash(path: string, filename: string | (() => string), postFix: string) {
+  path = path.endsWith("/") ? path : path + "/"
+  return constrIncHash((filename instanceof Function ? () => path + filename : path + filename), postFix, (await fs.readdir(path)).length)
+}
+
+(async () => {
+  const tempHash = await constrIncFileHash("temp", "screenshot", ".png")
+  const endHash = await constrIncFileHash("public/renders/", nowStr, ".png")
+
+  
+})()
+
 
 
 const app = setup()
@@ -143,7 +169,7 @@ const render = async (source: string, options: {lang?: string, theme?: "dark" | 
 
   await delay(500)
 
-  const bounds = await page.evaluate((linesOfSource) => {
+  const bounds = await page.evaluate((linesOfSource, numbers) => {
     const rect = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor").getBoundingClientRect()
     const lineBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs > div.lines-content.monaco-editor-background > div.view-lines")
     const lines = lineBody.querySelectorAll("span")
@@ -154,26 +180,37 @@ const render = async (source: string, options: {lang?: string, theme?: "dark" | 
     })
 
     let lineHeight = lines[0] ? lines[0].offsetHeight : 20
+
+    const numbersWidth = numbers ? (document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement).offsetWidth : 0
+    
     
     return { 
       top: rect.top,
-      left: rect.left,
-      width: maxWidth,
+      left: rect.left - numbersWidth,
+      width: maxWidth + numbersWidth,
       height: linesOfSource * lineHeight
     }
-  }, linesOfSource)
+  }, linesOfSource, options.numbers)
+
+  console.log(bounds)
+
+
 
 
   await delay(3000)
 
-  await page.screenshot({path: 'tmp/screenshot.png'});
-
   
+  const tempFilename = await tempHash()
 
-  await delay(30000)
+  await page.screenshot({path: `${tempFilename}.png`})
+  browser.close()
 
-  await browser.close();
-  console.log("close")
+  const endFilename = await endHash()
+
+  await sharp(tempFilename).extract(bounds).toFile(endFilename)
+
+
+
 
 
   
@@ -186,4 +223,7 @@ const render = async (source: string, options: {lang?: string, theme?: "dark" | 
 }
 
 render(`let me = "Hello!"; console.log(me)`, {autoFormat: false})
+
+
+
 
