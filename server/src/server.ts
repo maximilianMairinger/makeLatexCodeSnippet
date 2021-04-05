@@ -64,15 +64,17 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
 
   app.post("/renderPls", async (req, res) => {
     const r = await render(req.body.source, req.body.options)
-    res.send({id: r.id})
     inRender.set(r.id, r.done)
+    res.send({id: r.id})
     r.done.then(() => {
       inRender.delete(r.id)
     })
   });
 
   app.get("/renders/:id", (req, res, continue_) => {
+    console.log("middle")
     const renderDone = inRender.get(req.params.id)
+    console.log(req.params.id)
     if (renderDone !== undefined) {
       renderDone.then(() => {
         res.sendFile(`public/renders/${req.params.id}`)
@@ -81,6 +83,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
     else res.send({err: "Invalid id"})
   })
 
+  
 
 
 
@@ -111,7 +114,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       options = merge(defaultOptions, options) as any
 
 
-      const browser = await puppeteer.launch({ headless: true })
+      const browser = await puppeteer.launch({ headless: false })
       const page = await browser.newPage()
   
       const activeElement = async () => await page.evaluateHandle(() => document.activeElement) as any
@@ -244,15 +247,9 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       
       await page.keyboard.press('Enter')
       
-      await delay(1000)
+      await delay(3000)
   
       
-  
-      
-  
-      await delay(2000)
-
-
 
   
 
