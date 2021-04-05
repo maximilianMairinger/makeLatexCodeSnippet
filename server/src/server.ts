@@ -19,7 +19,7 @@ function constrIncHash(prefix: string | (() => string), postfix: string | (() =>
 
 async function constrIncFileHash(path: string, filename: string | (() => string), postFix: string) {
   path = path.endsWith("/") ? path : path + "/"
-  return constrIncHash((filename instanceof Function ? () => path + filename : path + filename), postFix, (await fs.readdir(path)).length)
+  return constrIncHash((filename instanceof Function ? () => path + filename() : path + filename), postFix, (await fs.readdir(path)).length)
 }
 
 
@@ -33,7 +33,7 @@ app.post("/echo", (req, res) => {
 
 (async () => {
   const tempHash = await constrIncFileHash("tmp", "screenshot_", ".png")
-  const endHash = await constrIncFileHash("public/renders/", nowStr, ".png")
+  const endHash = await constrIncFileHash("public/renders/", "wwee", ".png")
 
   
 
@@ -180,8 +180,8 @@ app.post("/echo", (req, res) => {
     await delay(500)
 
     const bounds = await page.evaluate((linesOfSource, numbers) => {
-      const rect = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor").getBoundingClientRect()
       const lineBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs > div.lines-content.monaco-editor-background > div.view-lines")
+      const rect = lineBody.getBoundingClientRect()
       const lines = lineBody.querySelectorAll("div > span") as NodeListOf<HTMLElement>
 
       let maxWidth = 0
@@ -203,6 +203,10 @@ app.post("/echo", (req, res) => {
     }, linesOfSource, options.numbers)
 
     console.log(bounds)
+    
+    for (let k in bounds) {
+      bounds[k] = bounds[k] * options.resolutionFactor
+    }
 
 
 
@@ -217,10 +221,12 @@ app.post("/echo", (req, res) => {
 
     const endFilename = await endHash()
 
+    console.log("cropping image", tempFilename)
     await sharp(tempFilename).extract(bounds).toFile(endFilename)
+    
 
 
-
+    console.log("done cropping image")
 
     
 
@@ -233,7 +239,7 @@ app.post("/echo", (req, res) => {
     
   }
 
-  render(`let me = "Hello!"; console.log(me)`, {autoFormat: false})
+  render(`let me = "Hello!"; console.log(me)`, {autoFormat: false, numbers: false})
 })()
 
 
