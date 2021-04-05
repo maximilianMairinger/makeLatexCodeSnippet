@@ -134,16 +134,6 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
         await delay(1500)
       }
 
-      const paste = async (text: string) => {
-        const before = await clip.read()
-        await clip.write(text)
-        await page.keyboard.down('Control');
-        await page.keyboard.down('Shift');
-        await page.keyboard.press('KeyV');
-        await page.keyboard.up('Control');
-        await page.keyboard.up('Shift');
-        await clip.write(before)
-      }
 
       const save = async () => {
         await page.keyboard.down('ControlLeft')
@@ -157,6 +147,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       const linesOfSource = source.split("\n").length
   
   
+
       await page.setViewport({
         width: 1920,
         height: 980 + (20 * linesOfSource),
@@ -167,7 +158,11 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   
       await page.waitForSelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > textarea")
 
+
       await delay(3000)
+
+      
+      
 
 
       if (options.theme.toLowerCase().includes("light")) {
@@ -185,29 +180,40 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       await page.keyboard.press('A')
       await page.keyboard.up('ControlLeft')
       await page.keyboard.press("Backspace")
+
+    
+
       await delay(100)
-      await paste(JSON.stringify(editorConfig))
+      await type(JSON.stringify(editorConfig))
       await save()
       await delay(500)
       await openSettings()
 
+      
+
       console.log("Confirming settings...")
 
-      await paste("Editor: Drag and drop")
+      await type("Editor: Drag and drop")
       await delay(1000)
       await page.keyboard.press("ArrowDown")
       await delay(1000)
       await page.keyboard.press("Enter")
       await delay(3000)
 
+      
+
       console.log("Close everything...")
 
 
       await openCmdPallet()
-      await paste("view: close all editors")
+      await type("view: close all editors")
       await delay(1500)
+      await page.screenshot({path: "tmp/a5.png"})
       await page.keyboard.press("Enter")
       await delay(1000)
+
+
+
 
       
       console.log("New file...")
@@ -216,7 +222,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   
       await delay(200)
   
-      await paste('new file')
+      await type('new file')
   
       await delay(1000)
   
@@ -224,10 +230,10 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   
       await delay(500)
 
-      await paste(source)
+      await type(source)
 
       await delay(500)
-  
+
       
       console.log("Saving file...")
   
@@ -238,7 +244,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       else { 
         await openCmdPallet()
         await delay(200)
-        await paste("file: save without formatting")
+        await type("file: save without formatting")
         await delay(2000)
         await page.keyboard.press('Enter')  
       }
@@ -247,13 +253,15 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   
       await delay(500)
   
-      paste(`/code.${options.lang}`)
+      type(`/code.${options.lang}`)
   
       await delay(500)
       
       await page.keyboard.press('Enter')
       
       await delay(3000)
+
+
   
       
 
