@@ -5,15 +5,21 @@ import merge from "deepmerge"
 import sharp from "sharp"
 import uidHash from "uid-safe"
 import { promises as fs } from "fs"
+import slugify from "slugify"
+import slash from "slash"
 
 function nowStr() {
   return new Date().toLocaleString("de-AT", { timeZone: "Europe/Vienna" })
 }
 
+function slugPath(path) {
+  return slash(path).split("/").map((s) => slugify(s)).join("/")
+}
+
 function constrIncHash(prefix: string | (() => string), postfix: string | (() => string) = "", initCount = 0) {
   let uid = initCount
   return async function fileHash() {
-    return (prefix instanceof Function ? prefix() : prefix) + await uidHash(32) + (uid++).toString(36) + (postfix instanceof Function ? postfix() : postfix)
+    return (prefix instanceof Function ? slugPath(prefix()) : slugPath(prefix)) + await uidHash(32) + (uid++).toString(36) + (postfix instanceof Function ? slugPath(postfix()) : slugPath(postfix))
   }
 }
 
@@ -33,7 +39,7 @@ app.post("/echo", (req, res) => {
 
 (async () => {
   const tempHash = await constrIncFileHash("tmp", "screenshot_", ".png")
-  const endHash = await constrIncFileHash("public/renders/", "wwee", ".png")
+  const endHash = await constrIncFileHash("public/renders/", "", ".png")
 
   
 
@@ -46,6 +52,7 @@ app.post("/echo", (req, res) => {
   }
 
   const render = async (source: string, options: {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number} = {}) => {
+    console.log("render request at ", nowStr())
     options = merge(defaultOptions, options) as any
 
     console.log("starting");
@@ -203,7 +210,7 @@ app.post("/echo", (req, res) => {
     }, linesOfSource, options.numbers)
 
     console.log(bounds)
-    
+
     for (let k in bounds) {
       bounds[k] = bounds[k] * options.resolutionFactor
     }
@@ -239,7 +246,7 @@ app.post("/echo", (req, res) => {
     
   }
 
-  render(`let me = "Hello!"; console.log(me)`, {autoFormat: false, numbers: false})
+  render(`let me = "Hello!"; console.log(me)\n//was soll das\nimport abc from "./abc\nconsole.log(abc())"`, {autoFormat: false, numbers: false})
 })()
 
 
