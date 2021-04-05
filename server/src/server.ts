@@ -83,7 +83,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
     else res.send({err: "Invalid id"})
   })
 
-  
+  console.log("Starting :)")
 
 
   await makeDir("tmp")
