@@ -256,18 +256,23 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   
   
   
-      await page.evaluate((options) => {
+      const suc = await page.evaluate((options) => {
         const linting = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-overlays")
         if (linting) linting.remove()
   
         if (options.theme === "light") {
           const numbers = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement
-          numbers.style.backgroundColor = "white"
+          if (numbers) numbers.style.backgroundColor = "white"
   
           const mainTextBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines") as HTMLElement
-          mainTextBody.style.backgroundColor = "white"
+          if (mainTextBody) mainTextBody.style.backgroundColor = "white"
+
+          return mainTextBody && numbers
         }
+        else return true
       }, options)
+
+      if (!suc) console.warn("!!!!!Warning: unable to do the white thing")
   
       await delay(500)
   
