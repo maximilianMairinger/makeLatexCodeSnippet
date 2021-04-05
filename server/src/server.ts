@@ -7,7 +7,7 @@ import uidHash from "uid-safe"
 import { promises as fs } from "fs"
 import slugify from "slugify"
 import slash from "slash"
-import clip from "clipboardy"
+import makeDir from "mkdirp"
 
 
 const editorConfig = {
@@ -86,7 +86,8 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   
 
 
-
+  await makeDir("tmp")
+  await makeDir("public/renders")
 
 
 
