@@ -114,6 +114,8 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
 
     options.resolutionFactor = Math.round(options.resolutionFactor)
 
+    console.log("running with options", options)
+
 
     const done = (async () => {
       options = merge(defaultOptions, options) as any
