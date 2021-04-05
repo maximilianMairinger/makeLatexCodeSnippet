@@ -118,7 +118,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       const browser = await puppeteer.launch({ 
         headless: true,
         args: ['--no-sandbox']
-       })
+      })
       const page = await browser.newPage()
   
       const activeElement = async () => await page.evaluateHandle(() => document.activeElement) as any
