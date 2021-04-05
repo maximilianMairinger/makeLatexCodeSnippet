@@ -6,6 +6,13 @@ Make Latex Code snippets with the atom one theme; based on images generated from
 
 The frontend / client is referred as app. The backend as server.
 
+### TODO
+
+ * Latex include text output
+ * Webserver
+ * remove temp
+ * 
+
 ### Development env
 
 #### Develop app

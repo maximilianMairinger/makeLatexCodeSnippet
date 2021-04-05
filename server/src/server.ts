@@ -105,7 +105,7 @@ app.post("/echo", (req, res) => {
 
     await page.setViewport({
       width: 1920,
-      height: 980 + (21 * linesOfSource),
+      height: 980 + (20 * linesOfSource),
       deviceScaleFactor: options.resolutionFactor
     });
     await page.goto('https://codesandbox.io/s/vanilla')
@@ -222,9 +222,12 @@ app.post("/echo", (req, res) => {
         if (maxWidth < line.offsetWidth) maxWidth = line.offsetWidth
       })
 
-      let lineHeight = lines[0] ? lines[0].offsetHeight : 21
+      const firstLine = lineBody.querySelector("div")
+
+      let lineHeight = firstLine ? firstLine.offsetHeight : 20
 
       const numbersWidth = numbers ? (document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement).offsetWidth : 0
+      
       
       
       return { 
