@@ -109,6 +109,10 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
     const [ tempFilename, endFilename ] = await Promise.all([tempHash(), endHash()])
     console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n", source)
 
+    if (options.resolutionFactor > 20) options.resolutionFactor = 20
+    if (options.resolutionFactor < 1) options.resolutionFactor = 1
+
+    options.resolutionFactor = Math.round(options.resolutionFactor)
 
 
     const done = (async () => {

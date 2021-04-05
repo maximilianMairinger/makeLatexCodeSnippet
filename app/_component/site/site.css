@@ -29,6 +29,20 @@ bod-bod > * {
 }
 
 
+input[type="text"],input[type="number"] {
+  margin-right: 8px;
+  width: 110px
+}
+
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+label {
+  cursor: pointer;
+  user-select: none;
+  margin-right: 8px;
+}
 
 /* @font-face {
   font-family: 'Overpass';

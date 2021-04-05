@@ -25,6 +25,35 @@ export default class Site extends Component {
       localStorage.val = txt.value
     })
     body.apd(txt, document.createElement("br"));
+
+    const resoltion = document.createElement("input")
+    resoltion.placeholder = "Resolution Factor"
+    resoltion.inputMode = "numeric"
+    resoltion.type = "number"
+    body.apd(resoltion as any)
+
+    const lang = document.createElement("input")
+    lang.value = "js"
+    lang.placeholder = "Language extension"
+    lang.type = "text"
+
+    body.apd(lang as any)
+
+
+    const numbers = document.createElement("input")
+    const numbersLabel = document.createElement("label")
+    numbers.id = numbers.name = numbersLabel.htmlFor = "numbers"
+    numbersLabel.innerText = "Numbers"
+    numbers.type = "checkbox"
+    body.apd(numbers as any, numbersLabel)
+
+    const format = document.createElement("input")
+    const formatLabel = document.createElement("label")
+    format.id = format.name = formatLabel.htmlFor = "format"
+    formatLabel.innerText = "Format"
+    format.type = "checkbox"
+    body.apd(format as any, formatLabel)
+
     
     const btn = document.createElement("button")
     btn.innerText = "Lets go"
@@ -33,7 +62,13 @@ export default class Site extends Component {
       
       console.log("sending: ", txt.value)
       let r = await post("renderPls", {
-        source: txt.value
+        source: txt.value,
+        options: {
+          resoltion: (resoltion.value !== "" && !isNaN(+resoltion.value)) ? +resoltion.value : undefined,
+          numbers: numbers.checked,
+          lang: lang.value,
+          autoFormat: format.value
+        }
       }) as {id: string}
       download("http://" + location.host + "/renders/" + r.id)
       console.log("fileId", "http://" + location.host + "/renders/" + r.id)
