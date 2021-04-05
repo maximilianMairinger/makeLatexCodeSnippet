@@ -121,6 +121,8 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       options = merge(defaultOptions, options) as any
 
 
+      
+
       const browser = await puppeteer.launch({ 
         headless: true,
         args: ['--no-sandbox']

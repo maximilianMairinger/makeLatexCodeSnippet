@@ -26,11 +26,11 @@ export default class Site extends Component {
     })
     body.apd(txt, document.createElement("br"));
 
-    const resoltion = document.createElement("input")
-    resoltion.placeholder = "Resolution Factor"
-    resoltion.inputMode = "numeric"
-    resoltion.type = "number"
-    body.apd(resoltion as any)
+    const resolution = document.createElement("input")
+    resolution.placeholder = "Resolution Factor"
+    resolution.inputMode = "numeric"
+    resolution.type = "number"
+    body.apd(resolution as any)
 
     const lang = document.createElement("input")
     lang.value = "js"
@@ -64,10 +64,10 @@ export default class Site extends Component {
       let r = await post("renderPls", {
         source: txt.value,
         options: {
-          resoltion: (resoltion.value !== "" && !isNaN(+resoltion.value)) ? +resoltion.value : undefined,
+          resolutionFactor: (resolution.value !== "" && !isNaN(+resolution.value)) ? +resolution.value : undefined,
           numbers: numbers.checked,
           lang: lang.value,
-          autoFormat: format.value
+          autoFormat: format.checked
         }
       }) as {id: string}
       download("http://" + location.host + "/renders/" + r.id)
