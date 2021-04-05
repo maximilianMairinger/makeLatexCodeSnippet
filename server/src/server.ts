@@ -104,13 +104,26 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
     resolutionFactor: 6
   }
 
+  const typechecking = {
+    theme: (t) => t === "light" || t === "dark",
+    numbers: (e) => typeof e === "boolean",
+    autoFormat: (e) => typeof e === "boolean",
+    resolutionFactor: (e) => typeof e === "number" && e <= 20 && e >= 1
+  }
+
+  function optionsTypechecking(options: any) {
+    for (let k in options) {
+      if (typechecking[k] !== undefined) if (!typechecking[k](options[k])) options[k] = defaultOptions[k]
+    }
+  }
+
 
   const render = async (source: string, options: {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number} = {}) => {
     const [ tempFilename, endFilename ] = await Promise.all([tempHash(), endHash()])
     console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n", source)
 
-    if (options.resolutionFactor > 20) options.resolutionFactor = 20
-    if (options.resolutionFactor < 1) options.resolutionFactor = 1
+    optionsTypechecking(options)
+
 
     options.resolutionFactor = Math.round(options.resolutionFactor)
 
@@ -121,7 +134,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       options = merge(defaultOptions, options) as any
 
 
-      
+
 
       const browser = await puppeteer.launch({ 
         headless: true,
