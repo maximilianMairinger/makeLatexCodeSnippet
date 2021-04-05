@@ -81,7 +81,9 @@
   },
   "dependencies": {
     "ajaon": "^1.5.11",
+    "clipboardy": "^2.3.0",
     "deepmerge": "^4.2.2",
+    "downloadar": "^1.1.0",
     "extended-dom": "^3.6.10",
     "fast-linked-list": "^1.0.3",
     "image-hash": "^4.0.1",
