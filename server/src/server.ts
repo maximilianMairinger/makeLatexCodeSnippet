@@ -114,7 +114,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       options = merge(defaultOptions, options) as any
 
 
-      const browser = await puppeteer.launch({ headless: false })
+      const browser = await puppeteer.launch({ headless: true })
       const page = await browser.newPage()
   
       const activeElement = async () => await page.evaluateHandle(() => document.activeElement) as any
@@ -162,6 +162,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
         height: 980 + (20 * linesOfSource),
         deviceScaleFactor: options.resolutionFactor
       });
+      console.log("Loading site...")
       await page.goto('https://codesandbox.io/s/vanilla')
   
       await page.waitForSelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > textarea")
@@ -173,7 +174,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
         editorConfig["workbench.colorTheme"] = "Atom One Light"
       }
 
-
+      console.log("Open settings...")
 
       await openSettings()
       page.evaluate(() => {
@@ -189,12 +190,17 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       await save()
       await delay(500)
       await openSettings()
+
+      console.log("Confirming settings...")
+
       await paste("Editor: Drag and drop")
       await delay(1000)
       await page.keyboard.press("ArrowDown")
       await delay(1000)
       await page.keyboard.press("Enter")
       await delay(3000)
+
+      console.log("Close everything...")
 
 
       await openCmdPallet()
@@ -204,7 +210,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       await delay(1000)
 
       
-        
+      console.log("New file...")
         
       await openCmdPallet()
   
@@ -223,7 +229,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       await delay(500)
   
       
-  
+      console.log("Saving file...")
   
   
       if (options.autoFormat) {
@@ -253,7 +259,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
 
   
 
-  
+      console.log("Clear linting and doing the white thing...")
   
   
       const suc = await page.evaluate((options) => {
@@ -272,9 +278,11 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
         else return true
       }, options)
 
-      if (!suc) console.warn("!!!!!Warning: unable to do the white thing")
+      if (!suc) console.warn("Warning: unable to do the white thing. Will continue anyway")
   
       await delay(500)
+
+      console.log("Add extra lines...")
   
       await page.keyboard.down("ControlLeft")
       await page.keyboard.press("End")
@@ -291,6 +299,8 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       await page.keyboard.up("ControlLeft")
   
       await delay(500)
+
+      console.log("Get bounds...")
   
       const bounds = await page.evaluate((linesOfSource, numbers) => {
         const lineBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines")
@@ -318,30 +328,29 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
         }
       }, linesOfSource, options.numbers)
   
-      console.log(bounds)
   
       for (let k in bounds) {
         bounds[k] = bounds[k] * options.resolutionFactor
       }
   
   
-  
+      console.log("Waiting...")
   
       await delay(3000)
   
-      
+      console.log("Screenshotting...")
   
       await page.screenshot({path: tempFilename})
       browser.close()
   
       
   
-      console.log("cropping image", endFilename)
+      console.log("cropping image...")
       await sharp(tempFilename).extract(bounds).toFile(endFilename)
       
   
   
-      console.log("done cropping image", endFilename)
+      console.log("done")
     })()
     
     
