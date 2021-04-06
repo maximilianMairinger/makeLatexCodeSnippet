@@ -11,6 +11,13 @@ import copy from "copy-to-clipboard"
 const { post, get } = ajaon();
 
 
+const pxToPt = (() => {
+  const fac = 12 / 16
+  return function pxToPt(px: number) {
+    return px * fac
+  }
+})()
+
 
 export default class Site extends Component {
 
@@ -68,7 +75,6 @@ export default class Site extends Component {
     let lastId: any
     let curNameValue: string
     const btn = new Button("Lets go", async () => {
-      console.log("sending: ", txt.value)
       let r = await post("renderPls", {
         source: txt.value,
         options: {
@@ -85,8 +91,10 @@ export default class Site extends Component {
 
       curNameValue = name.value() || r.id
 
+      const lines = txt.value.split("\n").length
+
       result.value = `\\begin{figure}
-  \\includegraphics[height=1]{images/${curNameValue}.png}
+  \\includegraphics[height=${pxToPt(16) * lines}pt]{images/code/${curNameValue}.png}
   \\caption{Dummy_Caption}
   \\label{code:${curNameValue}}
 \\end{figure}`
