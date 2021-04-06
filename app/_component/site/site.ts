@@ -66,27 +66,29 @@ export default class Site extends Component {
     
 
     let lastId: any
+    let curNameValue: string
     const btn = new Button("Lets go", async () => {
       console.log("sending: ", txt.value)
-      // let r = await post("renderPls", {
-      //   source: txt.value,
-      //   options: {
-      //     resolutionFactor: (resolution.value() !== "" && !isNaN(+resolution.value())) ? +resolution.value() : undefined,
-      //     numbers: numbers.checked,
-      //     lang: lang.value(),
-      //     autoFormat: format.checked
-      //   }
-      // }) as {id: string}
-      // lastId = r.id
+      let r = await post("renderPls", {
+        source: txt.value,
+        options: {
+          resolutionFactor: (resolution.value() !== "" && !isNaN(+resolution.value())) ? +resolution.value() : undefined,
+          numbers: numbers.checked,
+          lang: lang.value(),
+          autoFormat: format.checked
+        }
+      }) as {id: string}
+      lastId = r.id
 
       result.style.display = "block"
       copyBtn.style.display = "block"
 
+      curNameValue = name.value() || r.id
+
       result.value = `\\begin{figure}
-  \\centering
-  \\includegraphics[width=1\\linewidth]{images/breakdownEsModulesBottlekneck.png}
+  \\includegraphics[height=1]{images/${curNameValue}.png}
   \\caption{Dummy_Caption}
-  \\label{fig:esModulesBottleknecks}
+  \\label{code:${curNameValue}}
 \\end{figure}`
     })
     settingsBod.apd(btn, document.createElement("br"));
@@ -97,7 +99,7 @@ export default class Site extends Component {
     const startDownload = () => {
       if (!lastId) return
       console.log("http://" + location.host + "/renders/" + lastId)
-      download("http://" + location.host + "/renders/" + lastId)
+      download("http://" + location.host + "/renders/" + lastId, curNameValue)
       lastId = undefined
     }
 
