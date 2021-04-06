@@ -106,8 +106,8 @@ export default class Site extends Component {
 
     const startDownload = () => {
       if (!lastId) return
-      console.log("http://" + location.host + "/renders/" + lastId)
-      download("http://" + location.host + "/renders/" + lastId, curNameValue)
+      console.log("http://" + location.host + "/renders/" + lastId + ".png")
+      download("http://" + location.host + "/renders/" + lastId + ".png", curNameValue)
       lastId = undefined
     }
 

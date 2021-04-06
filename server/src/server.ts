@@ -64,7 +64,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
 
   app.post("/renderPls", async (req, res) => {
     const r = await render(req.body.source, req.body.options)
-    inRender.set(r.id, r.done)
+    inRender.set(r.id + ".png", r.done)
     res.send({id: r.id})
     r.done.then(() => {
       inRender.delete(r.id)
@@ -91,8 +91,8 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
 
 
 
-  const tempHash = await constrIncFileHash("tmp", "screenshot_", ".png")
-  const endHash = await constrIncFileHash("public/renders/", "", ".png")
+  const tempHash = await constrIncFileHash("tmp", "screenshot_", "")
+  const endHash = await constrIncFileHash("public/renders/", "", "")
 
   
 
@@ -379,7 +379,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       
   
       console.log("cropping image...")
-      await sharp(tempFilename).extract(bounds).toFile(endFilename)
+      await sharp(tempFilename).extract(bounds).toFile(endFilename + ".png")
       
   
   
