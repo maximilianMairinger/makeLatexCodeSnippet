@@ -20,8 +20,10 @@ component-body {
 
 bod-bod {
   margin: auto;
-  display: block;
+  display: flex;
+  flex-direction: column;
   max-width: 100%;
+  width: 600px;
 }
 
 bod-bod > * {
@@ -29,10 +31,24 @@ bod-bod > * {
 }
 
 
-input[type="text"],input[type="number"] {
-  margin-right: 8px;
-  width: 110px
+settings-body {
+  position: relative;
+  display: block;
+  width: calc(100% + 16px);
+  transform: translateX(-8px);
+  margin-top: 10px;
 }
+
+settings-body > * {
+  margin: 8px;
+  position: relative;
+  float: left;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+
 
 input[type="checkbox"] {
   cursor: pointer;
@@ -43,6 +59,22 @@ label {
   user-select: none;
   margin-right: 8px;
 }
+
+c-input {
+  width: 100px;
+  float: left;
+}
+
+textarea {
+  width: 600px;
+  height: 400px;
+  max-width: 100%;
+}
+
+textarea#result {
+  height: 120px
+}
+
 
 /* @font-face {
   font-family: 'Overpass';

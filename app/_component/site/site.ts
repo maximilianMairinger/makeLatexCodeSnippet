@@ -4,8 +4,13 @@ import declareComponent from "../../lib/declareComponent"
 import ajaon from "ajaon"
 import edom from "extended-dom"
 import download from "downloadar"
+import input from "./../input/input"
+import Button from "./../_button/_rippleButton/blockButton/blockButton"
+import copy from "copy-to-clipboard"
 
 const { post, get } = ajaon();
+
+
 
 export default class Site extends Component {
 
@@ -24,61 +29,101 @@ export default class Site extends Component {
     txt.on("input", () => {
       localStorage.val = txt.value
     })
-    body.apd(txt, document.createElement("br"));
+    body.apd(txt);
 
-    const resolution = document.createElement("input")
-    resolution.placeholder = "Resolution Factor"
-    resolution.inputMode = "numeric"
-    resolution.type = "number"
-    body.apd(resolution as any)
+    const settingsBod = document.createElement("settings-body")
+    body.apd(settingsBod)
 
-    const lang = document.createElement("input")
-    lang.value = "js"
-    lang.placeholder = "Language extension"
-    lang.type = "text"
-
-    body.apd(lang as any)
+    const name = input("Name")
+    settingsBod.apd(name)
 
 
+    const resolution = input("Resolution Factor", "integer", undefined, 6)
+    settingsBod.apd(resolution)
+
+    const lang = input("Language extension", undefined, undefined, "js")
+    settingsBod.apd(lang)
+
+    const numbersBody = ce("numbers-body")
     const numbers = document.createElement("input")
     const numbersLabel = document.createElement("label")
     numbers.id = numbers.name = numbersLabel.htmlFor = "numbers"
     numbersLabel.innerText = "Numbers"
     numbers.type = "checkbox"
-    body.apd(numbers as any, numbersLabel)
+    settingsBod.apd(numbersBody)
+    numbersBody.apd(numbers as any, numbersLabel)
 
+
+    const formatBody = ce("format-body")
     const format = document.createElement("input")
     const formatLabel = document.createElement("label")
     format.id = format.name = formatLabel.htmlFor = "format"
     formatLabel.innerText = "Format"
     format.type = "checkbox"
-    body.apd(format as any, formatLabel)
+    settingsBod.apd(formatBody)
+    formatBody.apd(format as any, formatLabel)
 
     
-    const btn = document.createElement("button")
-    btn.innerText = "Lets go"
-    body.apd(btn);
-    btn.on("click", async () => {
-      
+
+    let lastId: any
+    const btn = new Button("Lets go", async () => {
       console.log("sending: ", txt.value)
-      let r = await post("renderPls", {
-        source: txt.value,
-        options: {
-          resolutionFactor: (resolution.value !== "" && !isNaN(+resolution.value)) ? +resolution.value : undefined,
-          numbers: numbers.checked,
-          lang: lang.value,
-          autoFormat: format.checked
-        }
-      }) as {id: string}
-      download("http://" + location.host + "/renders/" + r.id)
-      console.log("fileId", "http://" + location.host + "/renders/" + r.id)
+      // let r = await post("renderPls", {
+      //   source: txt.value,
+      //   options: {
+      //     resolutionFactor: (resolution.value() !== "" && !isNaN(+resolution.value())) ? +resolution.value() : undefined,
+      //     numbers: numbers.checked,
+      //     lang: lang.value(),
+      //     autoFormat: format.checked
+      //   }
+      // }) as {id: string}
+      // lastId = r.id
+
+      result.style.display = "block"
+      copyBtn.style.display = "block"
+
+      result.value = `\\begin{figure}
+  \\centering
+  \\includegraphics[width=1\\linewidth]{images/breakdownEsModulesBottlekneck.png}
+  \\caption{Dummy_Caption}
+  \\label{fig:esModulesBottleknecks}
+\\end{figure}`
     })
+    settingsBod.apd(btn, document.createElement("br"));
+
+
+
+
+    const startDownload = () => {
+      if (!lastId) return
+      console.log("http://" + location.host + "/renders/" + lastId)
+      download("http://" + location.host + "/renders/" + lastId)
+      lastId = undefined
+    }
+
+    const result = document.createElement("textarea")
+    result.contentEditable = "false"
+    result.id = "result"
+    result.style.display = "none"
+    result.on("click", startDownload)
+    settingsBod.apd(result);
+
+
+
+    const copyBtn = new Button("Copy", startDownload)
+    copyBtn.style.display = "none"
+    settingsBod.apd(copyBtn);
+    copyBtn.addActivationCallback(() => {
+      copy(result.value)
+    })
+
+
     
 
   }
 
   stl() {
-    return require("./site.css")
+    return require("./../input/input.css").toString() + require("./site.css").toString()
   }
   pug() {
     return require("./site.pug")
