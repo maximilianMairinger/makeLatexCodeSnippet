@@ -8,6 +8,7 @@ import { promises as fs } from "fs"
 import slugify from "slugify"
 import slash from "slash"
 import makeDir from "mkdirp"
+import clip from "clipboardy"
 
 
 const editorConfig = {
@@ -63,13 +64,24 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   const inRender = new Map()
 
   app.post("/renderPls", async (req, res) => {
-    const r = await render(req.body.source, req.body.options)
+    const r = await render(req.body.source, req.body.options)    
     inRender.set(r.id + ".png", r.done)
     res.send({id: r.id})
     r.done.then(() => {
       inRender.delete(r.id)
+    }).catch(async (e) => {
+      console.log("failed once will try one more time", r.id)
+      console.log(e)
+      const r2 = await render(req.body.source, req.body.options, r.id)
+      r2.done.then(() => {
+        inRender.delete(r.id)
+      }).catch(() => {
+        console.log("Meh, failed again", r.id)
+        inRender.delete(r.id)
+      })
     })
   });
+
 
   app.get("/renders/:id", (req, res, continue_) => {
     console.log("middle")
@@ -84,6 +96,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   })
 
   console.log("Starting :)")
+
 
 
   await makeDir("tmp")
@@ -118,11 +131,13 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   }
 
 
-  const render = async (source: string, options: {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number} = {}) => {
-    const [ tempFilename, endFilename ] = await Promise.all([tempHash(), endHash()])
+  const render = async (source: string, options: {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number} = {}, forceEndFilename?: string) => {
+    const [ tempFilename, endFilename ] = await Promise.all([tempHash(), (() => forceEndFilename !== undefined ? forceEndFilename : endHash())()])
     console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n", source)
 
     optionsTypechecking(options)
+
+    source = source.trim()
 
 
     options.resolutionFactor = Math.round(options.resolutionFactor)
@@ -144,6 +159,19 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   
       const activeElement = async () => await page.evaluateHandle(() => document.activeElement) as any
       const type = async (text: string, ms?: number) => await (await activeElement()).type(text, ms ? {delay: ms} : undefined)
+
+      const paste = async (text: string) => {
+        const before = await clip.read()
+        await clip.write(text)
+        await page.keyboard.down('Control');
+        await page.keyboard.down('Shift');
+        await page.keyboard.press('KeyV');
+        await page.keyboard.up('Control');
+        await page.keyboard.up('Shift');
+        await clip.write(before)
+      }
+
+
       const openCmdPallet = async () => {
         await page.keyboard.down('ControlLeft')
         await page.keyboard.down('ShiftLeft')
@@ -233,7 +261,6 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       await openCmdPallet()
       await type("view: close all editors")
       await delay(1500)
-      await page.screenshot({path: "tmp/a5.png"})
       await page.keyboard.press("Enter")
       await delay(1000)
 
@@ -383,6 +410,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
       
   
   
+
       console.log("done")
     })()
     

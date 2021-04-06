@@ -93,11 +93,11 @@ export default class Site extends Component {
 
       const lines = txt.value.split("\n").length
 
-      result.value = `\\begin{figure}
+      result.value = `\\begin{listing}
   \\includegraphics[height=${pxToPt(17) * lines}pt]{images/code/${curNameValue}.png}
   \\caption{Dummy_Caption}
   \\label{code:${curNameValue}}
-\\end{figure}`
+\\end{listing}`
     })
     settingsBod.apd(btn, document.createElement("br"));
 
