@@ -1,4 +1,5 @@
 import Button from "./../button";
+import delay from "delay"
 
 export default abstract class RippleButton extends Button {
   private ripples: HTMLElement;
@@ -19,44 +20,49 @@ export default abstract class RippleButton extends Button {
       let r: HTMLElement = this.wave.cloneNode();
       this.ripples.append(r);
 
-      let fadeAnim = async () => {
+      
+
+      let letsFade = new Promise((letsFade) => {
+        let x;
+        let y;
+  
+        if (e instanceof MouseEvent) {
+          let offset = this.absoluteOffset();
+          x = e.pageX - offset.left - r.width() / 2;
+          y = e.pageY - offset.top - r.height() / 2;
+  
+          this.on("mouseup", letsFade, {once: true});
+          this.on("mouseout", letsFade, {once: true});
+        }
+        else {
+          x = this.width() / 2 - r.width() / 2;
+          y = this.height() / 2 - r.height() / 2;
+  
+          //fadeOut
+          this.on("keyup", letsFade, {once: true});
+          this.on("blur", letsFade, {once: true});
+        }
+        r.css({
+           marginTop: y,
+           marginLeft: x
+        });
+
+        
+      })
+
+      r.anim([{transform: "scale(0)", offset: 0}, {transform: "scale(" + this.width() / 25 * 2.2 + ")"}], 700);
+
+      Promise.all([delay(350), letsFade]).then(async () => {
         await r.anim({opacity: 0}, {duration: 400});
         r.remove();
-      }
+      })
 
-      let fadeisok = () => {
-        if (rdyToFade) fadeAnim();
-        else rdyToFade = true;
-      }
 
-      let x;
-      let y;
 
-      if (e instanceof MouseEvent) {
-        let offset = this.absoluteOffset();
-        x = e.pageX - offset.left - r.width() / 2;
-        y = e.pageY - offset.top - r.height() / 2;
 
-        this.on("mouseup", fadeisok, {once: true});
-        this.on("mouseout", fadeisok, {once: true});
-      }
-      else {
-        x = this.width() / 2 - r.width() / 2;
-        y = this.height() / 2 - r.height() / 2;
+      
 
-        //fadeOut
-        this.on("keyup", fadeisok, {once: true});
-        this.on("blur", fadeisok, {once: true});
-      }
-      r.css({
-         marginTop: y,
-         marginLeft: x
-      });
-      let rdyToFade = false;
-      r.anim([{scale: 0, offset: 0}, {scale: this.width() / 25 * 2.2}], {duration: 250, easing: "linear"}).then(() => {
-        if (rdyToFade) fadeAnim();
-        else rdyToFade = true;
-      });
+
     }
     stl() {
       return super.stl() + require('./rippleButton.css').toString();
