@@ -373,13 +373,13 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   
       console.log("Screenshotting...")
   
-      await page.screenshot({path: tempFilename})
+      await page.screenshot({path: tempFilename + ".png"})
       browser.close()
   
       
   
       console.log("cropping image...")
-      await sharp(tempFilename).extract(bounds).toFile(endFilename + ".png")
+      await sharp(tempFilename + ".png").extract(bounds).toFile(endFilename + ".png")
       
   
   
