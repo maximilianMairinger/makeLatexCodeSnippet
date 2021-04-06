@@ -94,7 +94,7 @@ export default class Site extends Component {
       const lines = txt.value.split("\n").length
 
       result.value = `\\begin{figure}
-  \\includegraphics[height=${pxToPt(16) * lines}pt]{images/code/${curNameValue}.png}
+  \\includegraphics[height=${pxToPt(17) * lines}pt]{images/code/${curNameValue}.png}
   \\caption{Dummy_Caption}
   \\label{code:${curNameValue}}
 \\end{figure}`
