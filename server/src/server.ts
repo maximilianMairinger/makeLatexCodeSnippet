@@ -6,7 +6,6 @@ import sharp from "sharp"
 import uidHash from "uid-safe"
 import { promises as fs } from "fs"
 import slugify from "slugify"
-import slash from "slash"
 import makeDir from "mkdirp"
 import clip from "clipboardy"
 
@@ -31,6 +30,11 @@ const editorConfig = {
   "editor.formatOnType": false,
   "editor.acceptSuggestionOnEnter": "off",
   "editor.wordWrap": "on"
+}
+
+
+function slash(path: string) {
+  return path.replace(/\\/g, '/')
 }
 
 
