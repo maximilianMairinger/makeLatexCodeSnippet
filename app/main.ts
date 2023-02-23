@@ -5,3 +5,4 @@ export default function() {
 
   document.body.append(site)
 }
+
