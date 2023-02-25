@@ -8,7 +8,9 @@ import { promises as fs } from "fs"
 import slugify from "slugify"
 import makeDir from "mkdirp"
 import clip from "clipboardy"
+import { port as vsCodePort } from "./vscode"
 
+console.log(vsCodePort)
 
 const editorConfig = {
   "editor.formatOnSave": false,
@@ -107,6 +109,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   await makeDir("public/renders")
 
 
+  
 
   const tempHash = await constrIncFileHash("tmp", "screenshot_", "")
   const endHash = await constrIncFileHash("public/renders/", "", "")
@@ -156,7 +159,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
 
 
       const browser = await puppeteer.launch({ 
-        headless: true,
+        headless: false,
         args: ['--no-sandbox']
       })
       const page = await browser.newPage()

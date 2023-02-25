@@ -10,6 +10,7 @@ export default {
     file: 'server/dist/server.js',
     format: 'cjs'
   },
+  inlineDynamicImports: true,
   plugins: [
     typescript({tsconfig: "./tsconfig.server.json", noEmitOnError: false}), 
     resolve({modulesOnly: true, preferBuiltins: true}),
