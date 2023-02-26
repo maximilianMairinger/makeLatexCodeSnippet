@@ -9,8 +9,8 @@ import slugify from "slugify"
 import makeDir from "mkdirp"
 import clip from "clipboardy"
 import { port as vsCodePort } from "./vscode"
+import { functionBasedWsClient, WebSocket } from "./wsUtil"
 
-console.log(vsCodePort)
 
 const editorConfig = {
   "editor.formatOnSave": false,
@@ -63,9 +63,34 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
 
 
 
-
+import { web as WebTypes } from "../../app/_component/site/site"
 (async () => {
-  const app = setup()
+  const app = setup({ webSockets: true })
+  
+
+  app.ws("/ws", (ws) => {
+    const web = functionBasedWsClient<typeof WebTypes>(ws)
+    
+    function log(...args: any) {
+      web.log(args.join(" "))
+      console.log(...args)
+    }
+  
+    function error(...args: any) {
+      web.error(args.join(" "))
+      console.error(...args)
+    }
+
+
+
+    // log("ws connected")
+
+  })
+
+
+
+
+
 
   const inRender = new Map()
 

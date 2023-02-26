@@ -6,6 +6,9 @@ const MongoClient = MongoDB.MongoClient
 import pth from "path"
 import fs from "fs"
 import detectPort from "detect-port"
+import expressWs from "express-ws"
+import { WsAttachment } from "./wsUtil";
+
 
 
 
@@ -104,10 +107,16 @@ type DBConfig = {
 
 const publicPath = "./public"
 
-export default function (dbName_DBConfig: string | DBConfig, indexUrl?: string): Promise<{ db: MongoDB.Db, app: express.Express & { port: Promise<number> } }>;
-export default function (dbName_DBConfig?: undefined | null, indexUrl?: string): express.Express & { port: Promise<number> };
-export default function (dbName_DBConfig?: string | null | undefined | DBConfig, indexUrl: string = "/"): any {
-  const app = configureExpressApp(indexUrl, publicPath)
+
+export default function setup(options: {dbName_DBConfig: string | DBConfig, indexUrl?: string, webSockets: true}): Promise<{ db: MongoDB.Db, app: express.Express & WsAttachment }>;
+export default function setup(options: {dbName_DBConfig?: undefined | null, indexUrl?: string, webSockets: true}): express.Express & { port: Promise<number> } & WsAttachment;
+export default function setup(options: {dbName_DBConfig: string | DBConfig, indexUrl?: string, webSockets?: false}): Promise<{ db: MongoDB.Db, app: express.Express & { port: Promise<number> } }>;
+export default function setup(options?: {dbName_DBConfig?: undefined | null, indexUrl?: string, webSockets?: false}): express.Express & { port: Promise<number> };
+export default function setup({dbName_DBConfig, indexUrl = "/", webSockets = false}: {dbName_DBConfig?: string | DBConfig, indexUrl?: string, webSockets?: boolean} = {}): any {
+  const app = !webSockets ? configureExpressApp(indexUrl, publicPath) : configureExpressApp(indexUrl, publicPath, undefined, (app) => {
+    expressWs(app)
+  })
+
 
   if (dbName_DBConfig) {
     let dbConfig: DBConfig
@@ -127,6 +136,3 @@ export default function (dbName_DBConfig?: string | null | undefined | DBConfig,
   }
   else return app
 }
-
-
-

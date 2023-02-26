@@ -7,6 +7,10 @@ import download from "downloadar"
 import input from "./../input/input"
 import Button from "./../_button/_rippleButton/blockButton/blockButton"
 import copy from "copy-to-clipboard"
+import LogDisplay from "./../logDisplay/logDisplay"
+import { bindInstanceFuncs, functionBasedWsServer } from "../../../server/src/wsUtil"
+
+
 
 const { post, get } = ajaon();
 
@@ -17,6 +21,9 @@ const pxToPt = (() => {
     return px * fac
   }
 })()
+
+
+
 
 
 export default class Site extends Component {
@@ -31,7 +38,7 @@ export default class Site extends Component {
     this.apd(body)
     
     const txt = document.createElement("textarea")
-    txt.value = localStorage.val
+    if (localStorage.val !== undefined) txt.value = localStorage.val
     txt.css({width: 600, height: 400})
     txt.on("input", () => {
       localStorage.val = txt.value
@@ -129,6 +136,9 @@ export default class Site extends Component {
 
 
     
+    body.apd(logDisplay)
+    
+
 
   }
 
@@ -141,3 +151,13 @@ export default class Site extends Component {
 }
 
 declareComponent("site", Site)
+
+
+
+
+const logDisplay = new LogDisplay()
+export const web = functionBasedWsServer("ws://127.0.0.1:6500/ws", bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
+
+
+
+

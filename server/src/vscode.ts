@@ -12,13 +12,17 @@ import josmFsAdapter from "josm-fs-adapter";
 needle.defaults({ parse_response: false });
 
 
-const localVsCode = "xcenicLocal"
-const startUrl = "https://xcenic.com"
+
+let startUrl = "https://vscode.dev"
 
 
 
 
 
+
+
+
+const localFolderPath = startUrl.startsWith("https://") ? startUrl.slice(8) : startUrl.slice(7).split("/").join("$")
 
 
 
@@ -26,7 +30,7 @@ const startUrl = "https://xcenic.com"
 
 async function isUnknownRoute(route: string) {
   try {
-    await fs.access(path.join(localVsCode, route))
+    await fs.access(path.join(localFolderPath, route))
     return false
   }
   catch (e) {
@@ -37,14 +41,14 @@ async function isUnknownRoute(route: string) {
 
 
 
-
+startUrl = startUrl.endsWith("/") ? startUrl.slice(0, -1) : startUrl
 
 
 async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
   // proxy https://vscode.dev/ for every unknown route get it from vscode.dev, save it and send it back to the client. For every route that is already saved, send the local version of it.
 
 
-  const mimeTypeIndex = await josmFsAdapter(path.join(__dirname, "../res/dist/mimeTypeIndex.json"), {})
+  const mimeTypeIndex = await josmFsAdapter(path.join(__dirname, `../res/dist`, localFolderPath, "mimeTypeIndex.json"), {})
 
 
 
@@ -67,15 +71,15 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
       }
     }
 
-    await mkdirp(localVsCode)
+    await mkdirp(localFolderPath)
 
     const localRoute = url.split("/").map((e) => saniFileName(e)).join("$")
-    const localPath = path.join(localVsCode, localRoute)
+    const localPath = path.join(localFolderPath, localRoute)
 
     const isUnknown = await isUnknownRoute(localRoute)
     
     if (isUnknown) {
-      console.log(`Unknown route: "${localRoute}"`)
+      console.log(`Unknown url: "${url}"`)
 
       try {
         
@@ -89,7 +93,6 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
           })
           body = res.body
           const mime = res.headers["content-type"]
-          console.log("mime", mime)
           mimeTypeIndex({[localRoute]: mime})
 
         }
@@ -98,6 +101,7 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
           console.error(e)
           return
         }
+        
         
       
         console.log("done fetching", url)
@@ -143,9 +147,9 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
       
     }
     else {
-      console.log(`Known route: "${localRoute}"`)
+      console.log(`Known url: "${url}"`)
       try {
-        console.log(path.join(path.resolve(""), localVsCode, localRoute))
+        console.log(path.join(path.resolve(""), localFolderPath, localRoute))
         // res.sendFile(path.join(path.resolve(""), localVsCode, localRoute))
         
         // set mime type to res
@@ -153,7 +157,7 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
         if (mime) {
           res.set("content-type", mime)
         }
-        res.send(await fs.readFile(path.join(path.resolve(""), localVsCode, localRoute)))
+        res.send(await fs.readFile(path.join(path.resolve(""), localFolderPath, localRoute)))
       }
       catch(e) {
         console.error(e)

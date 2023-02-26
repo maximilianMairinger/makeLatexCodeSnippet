@@ -1,0 +1,22 @@
+log-line {
+  display: flex;
+  margin-bottom: 3px
+}
+
+log-line.error {
+  color: red;
+}
+
+log-line input {
+  display: inline-block;
+  flex-grow: 1;
+
+  border: none;
+  background: transparent;
+  font-size: inherit;
+}
+
+h3 {
+  margin-bottom: 7px;
+  margin-top: 0;
+}
