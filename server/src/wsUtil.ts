@@ -43,7 +43,6 @@ export function functionBasedWsServer<FunctionMap extends {[key in string]: (...
         if (func) {
           (async () => {
             const result = await func(...c[key])
-            console.log("sending", result)
             ws.send(stringify({r: {[id]: result}}))
           })()
         }
@@ -84,7 +83,6 @@ export function functionBasedWsClient<FunctionMap extends {[key in string]: (...
         return new Promise(async (res) => {
           const myId = id++
           returnMap.set(myId, res);
-          console.log("sending", args);
           (await ws).send(stringify({id: myId, c: {[prop]: args}}))
         })
       }

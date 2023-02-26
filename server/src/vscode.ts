@@ -17,8 +17,10 @@ let startUrl = "https://vscode.dev"
 
 
 
-
-
+const enableLogging = false
+function log(...a: any) {
+  if (enableLogging) console.log(...a)
+}
 
 
 
@@ -86,7 +88,7 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
     const isUnknown = await isUnknownRoute(localRoute)
     
     if (isUnknown) {
-      console.log(`Unknown url: "${url}"`)
+      log(`Unknown url: "${url}"`)
 
       try {
         
@@ -111,7 +113,7 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
         
 
       
-        console.log("done fetching", url)
+        log("done fetching", url)
 
         if (isRoot) {
           // inject the service worker script
@@ -154,9 +156,9 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
       
     }
     else {
-      console.log(`Known url: "${url}"`)
+      log(`Known url: "${url}"`)
       try {
-        console.log(path.join(path.resolve(""), localFolderPath, localRoute))
+        log(path.join(path.resolve(""), localFolderPath, localRoute))
         // res.sendFile(path.join(path.resolve(""), localVsCode, localRoute))
         
         // set mime type to res

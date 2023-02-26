@@ -78,17 +78,28 @@ export default class Site extends Component {
     settingsBod.apd(formatBody)
     formatBody.apd(format as any, formatLabel)
 
+    const themeBody = ce("format-body")
+    const theme = document.createElement("input")
+    const themeLabel = document.createElement("label")
+    theme.id = format.name = themeLabel.htmlFor = "theme"
+    themeLabel.innerText = "Dark Theme"
+    theme.type = "checkbox"
+    settingsBod.apd(themeBody)
+    themeBody.apd(theme as any, themeLabel)
+
     
 
     let lastId: any
     let curNameValue: string
+    const btnContainer = ce("btn-container")
     const btn = new Button("Lets go", async () => {
 
       const id = await server.renderPls(txt.value, {
         resolutionFactor: (resolution.value() !== "" && !isNaN(+resolution.value())) ? +resolution.value() : undefined,
         numbers: numbers.checked,
         lang: lang.value(),
-        autoFormat: format.checked
+        autoFormat: format.checked,
+        theme: theme.checked ? "dark" : "light"
       })
 
       result.style.display = "block"
@@ -104,7 +115,8 @@ export default class Site extends Component {
   \\label{code:${curNameValue}}
 \\end{listing}`
     })
-    settingsBod.apd(btn, document.createElement("br"));
+    btnContainer.apd(btn)
+    settingsBod.apd(btnContainer, document.createElement("br"));
 
 
 

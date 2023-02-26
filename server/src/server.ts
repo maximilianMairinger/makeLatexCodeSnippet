@@ -10,11 +10,17 @@ import makeDir from "mkdirp"
 import clip from "clipboardy"
 import { port as vsCodePort } from "./vscode"
 import { functionBasedWsClient, functionBasedWsServer, FunctionMapWithPromisesAsReturnType, WebSocket } from "./wsUtil"
+import os from "os"
+
+
+const isMacOs = os.platform() === 'darwin'
+
+
 
 
 const editorConfig = {
   "editor.formatOnSave": false,
-  "editor.fontSize": 20,
+  "editor.fontSize": 18,
   "editor.tabSize": 2,
   "editor.minimap.enabled": false,
   "workbench.editor.openSideBySideDirection": "down",
@@ -31,7 +37,40 @@ const editorConfig = {
   "editor.autoClosingBrackets": false,
   "editor.formatOnType": false,
   "editor.acceptSuggestionOnEnter": "off",
-  "editor.wordWrap": "on"
+  "editor.wordWrap": "on",
+  "editor.matchBrackets": "never"
+}
+
+
+
+
+
+const fileExtensionsToLang = {
+  "js": "javascript",
+  "ts": "typescript",
+  "html": "html",
+  "css": "css",
+  "scss": "scss",
+  "sass": "sass",
+  "less": "less",
+  "json": "json",
+  "md": "markdown",
+  "py": "python",
+  "rb": "ruby",
+  "rs": "rust",
+  "go": "go",
+  "java": "java",
+  "c": "c",
+  "cpp": "cpp",
+  "cs": "csharp",
+  "php": "php",
+  "sh": "shellscript",
+  "yml": "yaml",
+  "yaml": "yaml",
+  "xml": "xml",
+  "svg": "xml",
+  "jsx": "javascriptreact",
+  "tsx": "typescriptreact"
 }
 
 
@@ -87,8 +126,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
     functionBasedWsServer(ws, {
-      async renderPls(src: string, options: RenderOptions) {
-        const r = await render(src, options)    
+      async renderPls(sourceCode: string, options: RenderOptions) {
+        const r = await render(sourceCode, options)    
         inRender.set(r.id + ".png", r.done)
         
         r.done.then(() => {
@@ -97,7 +136,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           log("failed once will try one more time")
           console.log(r.id)
           console.log(e)
-          const r2 = await render(src, options, r.id)
+          const r2 = await render(sourceCode, options, r.id)
           r2.done.then(() => {
             inRender.delete(r.id)
           }).catch(() => {
@@ -119,8 +158,9 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
     const render = async (source: string, options: RenderOptions = {}, forceEndFilename?: string) => {
+
       const [ tempFilename, endFilename ] = await Promise.all([tempHash(), (() => forceEndFilename !== undefined ? forceEndFilename : endHash())()])
-      console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n", source)
+      console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n" + source)
 
       optionsTypechecking(options)
 
@@ -158,27 +198,55 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         }
 
 
+        const click = async (selector: string) => {
+          await page.click(selector)
+        }
+
+
+        const focus = async (selector: string) => {
+          await page.focus(selector)
+        }
+
+
+
+        const cmdKey = {
+          async down() {
+            if (isMacOs) await page.keyboard.down('MetaLeft')
+            else await page.keyboard.down('ControlLeft')
+          },
+          async up() {
+            if (isMacOs) await page.keyboard.up('MetaLeft')
+            else await page.keyboard.up('ControlLeft')
+          }
+        }
+
         const openCmdPallet = async () => {
-          await page.keyboard.down('ControlLeft')
+          await cmdKey.down()
           await page.keyboard.down('ShiftLeft')
           await page.keyboard.press('P')
           await page.keyboard.up('ShiftLeft')
-          await page.keyboard.up("ControlLeft")
+          await cmdKey.up()
         }
 
         const openSettings = async () => {
-          await page.keyboard.down('ControlLeft')
+          await cmdKey.down()
           await page.keyboard.press("Comma")
-          await page.keyboard.up("ControlLeft")
+          await cmdKey.up()
           await delay(1500)
         }
 
-
-        const save = async () => {
-          await page.keyboard.down('ControlLeft')
-          await page.keyboard.press('S')
-          await page.keyboard.up('ControlLeft')
+        const cmd = async (cmd: string) => {
+          await openCmdPallet()
+          await type(cmd)
+          await enter()
+          await delay(300)
         }
+
+
+        const enter = async () => {
+          await page.keyboard.press("Enter")
+        }
+
 
 
         const linesOfSource = source.split("\n").length
@@ -189,18 +257,81 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
     
 
         await page.setViewport({
-          width: 1920,
-          height: 980 + (20 * linesOfSource),
+          width: 1210,
+          height: 780 + (20 * linesOfSource),
           deviceScaleFactor: options.resolutionFactor
         });
         console.log("Loading site...")
-        await page.goto('https://codesandbox.io/s/vanilla')
-    
-        await page.waitForSelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > textarea")
 
-        console.log("got selector")
+
+
+
+
+
+        await page.goto(`http://127.0.0.1:${await vsCodePort}`)
+
+        await page.reload()
+
+
+        await page.waitForSelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div > div.monaco-scrollable-element.full-height-scrollable.categoriesScrollbar.mac > div.gettingStartedSlideCategories.gettingStartedSlide > div > div.categories-column.categories-column-left > div.index-list.start-container > div > ul > li:nth-child(1) > button")
 
         await delay(3000)
+
+        await cmd("open user settings json")
+        await delay(500)
+        await cmd("select all")
+        await page.keyboard.press("Backspace")
+        
+        await type(JSON.stringify(editorConfig))
+        await delay(2000)
+
+        await cmd("new file")
+        await delay(50)
+        await enter()
+        
+        await delay(200)
+
+
+        await type(source)
+        await click("#status\\.editor\\.mode > a")
+        await type(fileExtensionsToLang[options.lang])
+        await enter()
+
+        await delay(500)
+
+
+        // this takes some time but works in the background
+        // todo: this scrolls down couse the cursor will always be at the top of the screen but is at the bottom of text after input. TODO: move cursor to pos1 before formatting
+        if (options.autoFormat) await cmd("format document")
+
+        // if (options.theme === "dark") {
+        //   await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(5) > a")
+        //   await type("codesandbox theme")
+        //   await delay(4000)
+        //   // document.querySelector("#list_id_7_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+        //   await click("#list_id_7_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+        //   await delay(2000)
+        //   await click("#list_id_2_2 > div > label > div > div:nth-child(1) > div.monaco-icon-label > div")
+        //   await delay(2000)
+        // }
+        // else {
+        //   await openCmdPallet()
+        //   await type("pref theme")
+        //   await delay(200)
+        //   await enter()
+        //   await delay(200)
+        //   await type("light visual studio")
+        //   await enter()
+        //   await delay(200)
+        // }
+
+
+
+        
+
+
+
+        console.log("cmd pallet opened")
 
         
         
@@ -409,11 +540,20 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
       } 
     }
 
+    try {
+      render(`function slugPath(path) {return slash(path).split("/").map((s) => slugify(s)).join("/")
+}`, {})
+    }
+    catch(e) {console.error("failed render")}
+    
 
 
     // log("ws connected")
 
   })
+
+  
+
 
 
   const inRender = new Map()
@@ -463,8 +603,9 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
   }
 
   function optionsTypechecking(options: any) {
-    for (let k in options) {
-      if (typechecking[k] !== undefined) if (!typechecking[k](options[k])) options[k] = defaultOptions[k]
+    for (let k in defaultOptions) {
+      if (options[k] === undefined) options[k] = defaultOptions[k]
+      else if (typechecking[k] !== undefined) if (!typechecking[k](options[k])) options[k] = defaultOptions[k]
     }
   }
 
