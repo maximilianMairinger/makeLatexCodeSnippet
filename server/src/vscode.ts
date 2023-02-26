@@ -57,6 +57,13 @@ async function addToApp(app: ReturnType<typeof simpleExpessApp>) {
   })
 
 
+  app.get(`/sw.js`, async (req, res, nxt) => {
+    res.status(404).send()
+  })
+
+
+
+
 
 
 
