@@ -9,7 +9,7 @@ import slugify from "slugify"
 import makeDir from "mkdirp"
 import clip from "clipboardy"
 import { port as vsCodePort } from "./vscode"
-import { functionBasedWsClient, WebSocket } from "./wsUtil"
+import { functionBasedWsClient, functionBasedWsServer, FunctionMapWithPromisesAsReturnType, WebSocket } from "./wsUtil"
 
 
 const editorConfig = {
@@ -60,25 +60,353 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   return constrIncHash((filename instanceof Function ? () => path + filename() : path + filename), postFix, (await fs.readdir(path)).length)
 }
 
+type RenderOptions = {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number}
+export type ExportedFunctions = FunctionMapWithPromisesAsReturnType<{
+  renderPls: (src: string, options: RenderOptions) => Promise<string>
+}>
 
 
-
-import { web as WebTypes } from "../../app/_component/site/site"
+import { webLog as WebTypes } from "../../app/_component/site/site"
 (async () => {
   const app = setup({ webSockets: true })
   
 
   app.ws("/ws", (ws) => {
-    const web = functionBasedWsClient<typeof WebTypes>(ws)
+    const webConsole = functionBasedWsClient<typeof WebTypes>(ws)
     
     function log(...args: any) {
-      web.log(args.join(" "))
+      webConsole.log(args.join(" "))
       console.log(...args)
     }
   
     function error(...args: any) {
-      web.error(args.join(" "))
+      webConsole.error(args.join(" "))
       console.error(...args)
+    }
+
+
+
+    functionBasedWsServer(ws, {
+      async renderPls(src: string, options: RenderOptions) {
+        const r = await render(src, options)    
+        inRender.set(r.id + ".png", r.done)
+        
+        r.done.then(() => {
+          inRender.delete(r.id)
+        }).catch(async (e) => {
+          log("failed once will try one more time")
+          console.log(r.id)
+          console.log(e)
+          const r2 = await render(src, options, r.id)
+          r2.done.then(() => {
+            inRender.delete(r.id)
+          }).catch(() => {
+            log("Meh, failed again")
+            console.log(r.id)
+            inRender.delete(r.id)
+          })
+        })
+
+
+        return r.id
+      }
+    })
+
+
+
+
+
+
+
+    const render = async (source: string, options: RenderOptions = {}, forceEndFilename?: string) => {
+      const [ tempFilename, endFilename ] = await Promise.all([tempHash(), (() => forceEndFilename !== undefined ? forceEndFilename : endHash())()])
+      console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n", source)
+
+      optionsTypechecking(options)
+
+      source = source.trim()
+
+
+      options.resolutionFactor = Math.round(options.resolutionFactor)
+
+      console.log("running with options", options)
+
+
+      const done = (async () => {
+        options = merge(defaultOptions, options) as any
+
+
+        const browser = await puppeteer.launch({ 
+          headless: false,
+          args: ['--no-sandbox']
+        })
+        const page = await browser.newPage()
+
+    
+        const activeElement = async () => await page.evaluateHandle(() => document.activeElement) as any
+        const type = async (text: string, ms?: number) => await (await activeElement()).type(text, ms ? {delay: ms} : undefined)
+
+        const paste = async (text: string) => {
+          const before = await clip.read()
+          await clip.write(text)
+          await page.keyboard.down('Control');
+          await page.keyboard.down('Shift');
+          await page.keyboard.press('KeyV');
+          await page.keyboard.up('Control');
+          await page.keyboard.up('Shift');
+          await clip.write(before)
+        }
+
+
+        const openCmdPallet = async () => {
+          await page.keyboard.down('ControlLeft')
+          await page.keyboard.down('ShiftLeft')
+          await page.keyboard.press('P')
+          await page.keyboard.up('ShiftLeft')
+          await page.keyboard.up("ControlLeft")
+        }
+
+        const openSettings = async () => {
+          await page.keyboard.down('ControlLeft')
+          await page.keyboard.press("Comma")
+          await page.keyboard.up("ControlLeft")
+          await delay(1500)
+        }
+
+
+        const save = async () => {
+          await page.keyboard.down('ControlLeft')
+          await page.keyboard.press('S')
+          await page.keyboard.up('ControlLeft')
+        }
+
+
+        const linesOfSource = source.split("\n").length
+
+
+        
+
+    
+
+        await page.setViewport({
+          width: 1920,
+          height: 980 + (20 * linesOfSource),
+          deviceScaleFactor: options.resolutionFactor
+        });
+        console.log("Loading site...")
+        await page.goto('https://codesandbox.io/s/vanilla')
+    
+        await page.waitForSelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > textarea")
+
+        console.log("got selector")
+
+        await delay(3000)
+
+        
+        
+
+
+      //   if (options.theme.toLowerCase().includes("light")) {
+      //     editorConfig["workbench.colorTheme"] = "Atom One Light"
+      //   }
+
+      //   console.log("Open settings...")
+
+      //   await openSettings()
+      //   page.evaluate(() => {
+      //     (document.querySelector("#vscode-editor > div > div > div > div > div > div.split-view-container > div > div > div.title.tabs.show-file-icons > div.tabs-and-actions-container > div.editor-actions > div > div > ul > li:nth-child(1) > a") as HTMLElement).click()
+      //   })
+      //   await delay(2500)
+      //   await page.keyboard.down('ControlLeft')
+      //   await page.keyboard.press('A')
+      //   await page.keyboard.up('ControlLeft')
+      //   await page.keyboard.press("Backspace")
+
+      
+
+      //   await delay(100)
+      //   await type(JSON.stringify(editorConfig))
+      //   await save()
+      //   await delay(500)
+      //   await openSettings()
+
+        
+
+      //   console.log("Confirming settings...")
+
+      //   await type("Editor: Drag and drop")
+      //   await delay(1000)
+      //   await page.keyboard.press("ArrowDown")
+      //   await delay(1000)
+      //   await page.keyboard.press("Enter")
+      //   await delay(3000)
+
+        
+
+      //   console.log("Close everything...")
+
+
+      //   await openCmdPallet()
+      //   await type("view: close all editors")
+      //   await delay(1500)
+      //   await page.keyboard.press("Enter")
+      //   await delay(1000)
+
+
+
+
+        
+      //   console.log("New file...")
+          
+      //   await openCmdPallet()
+    
+      //   await delay(200)
+    
+      //   await type('new file')
+    
+      //   await delay(1000)
+    
+      //   await page.keyboard.press('Enter')
+    
+      //   await delay(500)
+
+      //   await type(source)
+
+      //   await delay(500)
+
+        
+      //   console.log("Saving file...")
+    
+    
+      //   if (options.autoFormat) {
+      //     await save()
+      //   }
+      //   else { 
+      //     await openCmdPallet()
+      //     await delay(200)
+      //     await type("file: save without formatting")
+      //     await delay(2000)
+      //     await page.keyboard.press('Enter')  
+      //   }
+        
+    
+    
+      //   await delay(500)
+    
+      //   type(`/code.${options.lang}`)
+    
+      //   await delay(500)
+        
+      //   await page.keyboard.press('Enter')
+        
+      //   await delay(3000)
+
+
+    
+        
+
+    
+
+      //   console.log("Clear linting and doing the white thing...")
+    
+    
+      //   const suc = await page.evaluate((options) => {
+      //     const linting = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-overlays")
+      //     if (linting) linting.remove()
+    
+      //     if (options.theme === "light") {
+      //       const numbers = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement
+      //       if (numbers) numbers.style.backgroundColor = "white"
+    
+      //       const mainTextBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines") as HTMLElement
+      //       if (mainTextBody) mainTextBody.style.backgroundColor = "white"
+
+      //       return mainTextBody && numbers
+      //     }
+      //     else return true
+      //   }, options)
+
+      //   if (!suc) console.warn("Warning: unable to do the white thing. Will continue anyway")
+    
+      //   await delay(500)
+
+      //   console.log("Add extra lines...")
+    
+      //   await page.keyboard.down("ControlLeft")
+      //   await page.keyboard.press("End")
+      //   await page.keyboard.up("ControlLeft")
+    
+      //   await delay(500)
+    
+      //   await type("\n\n\n")
+    
+      //   await delay(500)
+    
+      //   await page.keyboard.down("ControlLeft")
+      //   await page.keyboard.press("End")
+      //   await page.keyboard.up("ControlLeft")
+    
+      //   await delay(500)
+
+      //   console.log("Get bounds...")
+    
+      //   const bounds = await page.evaluate((linesOfSource, numbers) => {
+      //     const lineBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines")
+      //     const rect = lineBody.getBoundingClientRect()
+      //     const lines = lineBody.querySelectorAll("div > span") as NodeListOf<HTMLElement>
+    
+      //     let maxWidth = 0
+      //     lines.forEach((line) => {
+      //       if (maxWidth < line.offsetWidth) maxWidth = line.offsetWidth
+      //     })
+    
+      //     const firstLine = lineBody.querySelector("div")
+    
+      //     let lineHeight = firstLine ? firstLine.offsetHeight : 20
+    
+      //     const numbersWidth = numbers ? (document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement).offsetWidth : 0
+          
+          
+          
+      //     return { 
+      //       top: rect.top,
+      //       left: rect.left - numbersWidth,
+      //       width: maxWidth + numbersWidth,
+      //       height: linesOfSource * lineHeight
+      //     }
+      //   }, linesOfSource, options.numbers)
+    
+    
+      //   for (let k in bounds) {
+      //     bounds[k] = bounds[k] * options.resolutionFactor
+      //   }
+    
+    
+      //   console.log("Waiting...")
+    
+      //   await delay(3000)
+    
+      //   console.log("Screenshotting...")
+    
+      //   await page.screenshot({path: tempFilename + ".png"})
+      //   browser.close()
+    
+        
+    
+      //   console.log("cropping image...")
+      //   await sharp(tempFilename + ".png").extract(bounds).toFile(endFilename + ".png")
+        
+    
+    
+
+      //   console.log("done")
+      })()
+      
+      
+      return {
+        id: endFilename.split("/").last,
+        done: Promise.resolve() // todo
+      } 
     }
 
 
@@ -88,30 +416,8 @@ import { web as WebTypes } from "../../app/_component/site/site"
   })
 
 
-
-
-
-
   const inRender = new Map()
 
-  app.post("/renderPls", async (req, res) => {
-    const r = await render(req.body.source, req.body.options)    
-    inRender.set(r.id + ".png", r.done)
-    res.send({id: r.id})
-    r.done.then(() => {
-      inRender.delete(r.id)
-    }).catch(async (e) => {
-      console.log("failed once will try one more time", r.id)
-      console.log(e)
-      const r2 = await render(req.body.source, req.body.options, r.id)
-      r2.done.then(() => {
-        inRender.delete(r.id)
-      }).catch(() => {
-        console.log("Meh, failed again", r.id)
-        inRender.delete(r.id)
-      })
-    })
-  });
 
 
   app.get("/renders/:id", (req, res, continue_) => {
@@ -123,7 +429,7 @@ import { web as WebTypes } from "../../app/_component/site/site"
         res.sendFile(`public/renders/${req.params.id}`)
       })
     }
-    else res.send({err: "Invalid id"})
+    else res.sendFile(`public/renders/${req.params.id}`)
   })
 
   console.log("Starting :)")
@@ -146,7 +452,7 @@ import { web as WebTypes } from "../../app/_component/site/site"
     theme: "light",
     numbers: false,
     autoFormat: true,
-    resolutionFactor: 6
+    resolutionFactor: 1
   }
 
   const typechecking = {
@@ -163,314 +469,7 @@ import { web as WebTypes } from "../../app/_component/site/site"
   }
 
 
-  const render = async (source: string, options: {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number} = {}, forceEndFilename?: string) => {
-    const [ tempFilename, endFilename ] = await Promise.all([tempHash(), (() => forceEndFilename !== undefined ? forceEndFilename : endHash())()])
-    console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n", source)
-
-    optionsTypechecking(options)
-
-    source = source.trim()
-
-
-    options.resolutionFactor = Math.round(options.resolutionFactor)
-
-    console.log("running with options", options)
-
-
-    const done = (async () => {
-      options = merge(defaultOptions, options) as any
-
-
-
-
-      const browser = await puppeteer.launch({ 
-        headless: false,
-        args: ['--no-sandbox']
-      })
-      const page = await browser.newPage()
   
-      const activeElement = async () => await page.evaluateHandle(() => document.activeElement) as any
-      const type = async (text: string, ms?: number) => await (await activeElement()).type(text, ms ? {delay: ms} : undefined)
-
-      const paste = async (text: string) => {
-        const before = await clip.read()
-        await clip.write(text)
-        await page.keyboard.down('Control');
-        await page.keyboard.down('Shift');
-        await page.keyboard.press('KeyV');
-        await page.keyboard.up('Control');
-        await page.keyboard.up('Shift');
-        await clip.write(before)
-      }
-
-
-      const openCmdPallet = async () => {
-        await page.keyboard.down('ControlLeft')
-        await page.keyboard.down('ShiftLeft')
-        await page.keyboard.press('P')
-        await page.keyboard.up('ShiftLeft')
-        await page.keyboard.up("ControlLeft")
-      }
-
-      const openSettings = async () => {
-        await page.keyboard.down('ControlLeft')
-        await page.keyboard.press("Comma")
-        await page.keyboard.up("ControlLeft")
-        await delay(1500)
-      }
-
-
-      const save = async () => {
-        await page.keyboard.down('ControlLeft')
-        await page.keyboard.press('S')
-        await page.keyboard.up('ControlLeft')
-      }
-
-
-  
-      
-      const linesOfSource = source.split("\n").length
-  
-  
-
-      await page.setViewport({
-        width: 1920,
-        height: 980 + (20 * linesOfSource),
-        deviceScaleFactor: options.resolutionFactor
-      });
-      console.log("Loading site...")
-      await page.goto('https://codesandbox.io/s/vanilla')
-  
-      await page.waitForSelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > textarea")
-
-
-      await delay(3000)
-
-      
-      
-
-
-      if (options.theme.toLowerCase().includes("light")) {
-        editorConfig["workbench.colorTheme"] = "Atom One Light"
-      }
-
-      console.log("Open settings...")
-
-      await openSettings()
-      page.evaluate(() => {
-        (document.querySelector("#vscode-editor > div > div > div > div > div > div.split-view-container > div > div > div.title.tabs.show-file-icons > div.tabs-and-actions-container > div.editor-actions > div > div > ul > li:nth-child(1) > a") as HTMLElement).click()
-      })
-      await delay(2500)
-      await page.keyboard.down('ControlLeft')
-      await page.keyboard.press('A')
-      await page.keyboard.up('ControlLeft')
-      await page.keyboard.press("Backspace")
-
-    
-
-      await delay(100)
-      await type(JSON.stringify(editorConfig))
-      await save()
-      await delay(500)
-      await openSettings()
-
-      
-
-      console.log("Confirming settings...")
-
-      await type("Editor: Drag and drop")
-      await delay(1000)
-      await page.keyboard.press("ArrowDown")
-      await delay(1000)
-      await page.keyboard.press("Enter")
-      await delay(3000)
-
-      
-
-      console.log("Close everything...")
-
-
-      await openCmdPallet()
-      await type("view: close all editors")
-      await delay(1500)
-      await page.keyboard.press("Enter")
-      await delay(1000)
-
-
-
-
-      
-      console.log("New file...")
-        
-      await openCmdPallet()
-  
-      await delay(200)
-  
-      await type('new file')
-  
-      await delay(1000)
-  
-      await page.keyboard.press('Enter')
-  
-      await delay(500)
-
-      await type(source)
-
-      await delay(500)
-
-      
-      console.log("Saving file...")
-  
-  
-      if (options.autoFormat) {
-        await save()
-      }
-      else { 
-        await openCmdPallet()
-        await delay(200)
-        await type("file: save without formatting")
-        await delay(2000)
-        await page.keyboard.press('Enter')  
-      }
-      
-  
-  
-      await delay(500)
-  
-      type(`/code.${options.lang}`)
-  
-      await delay(500)
-      
-      await page.keyboard.press('Enter')
-      
-      await delay(3000)
-
-
-  
-      
-
-  
-
-      console.log("Clear linting and doing the white thing...")
-  
-  
-      const suc = await page.evaluate((options) => {
-        const linting = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-overlays")
-        if (linting) linting.remove()
-  
-        if (options.theme === "light") {
-          const numbers = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement
-          if (numbers) numbers.style.backgroundColor = "white"
-  
-          const mainTextBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines") as HTMLElement
-          if (mainTextBody) mainTextBody.style.backgroundColor = "white"
-
-          return mainTextBody && numbers
-        }
-        else return true
-      }, options)
-
-      if (!suc) console.warn("Warning: unable to do the white thing. Will continue anyway")
-  
-      await delay(500)
-
-      console.log("Add extra lines...")
-  
-      await page.keyboard.down("ControlLeft")
-      await page.keyboard.press("End")
-      await page.keyboard.up("ControlLeft")
-  
-      await delay(500)
-  
-      await type("\n\n\n")
-  
-      await delay(500)
-  
-      await page.keyboard.down("ControlLeft")
-      await page.keyboard.press("End")
-      await page.keyboard.up("ControlLeft")
-  
-      await delay(500)
-
-      console.log("Get bounds...")
-  
-      const bounds = await page.evaluate((linesOfSource, numbers) => {
-        const lineBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines")
-        const rect = lineBody.getBoundingClientRect()
-        const lines = lineBody.querySelectorAll("div > span") as NodeListOf<HTMLElement>
-  
-        let maxWidth = 0
-        lines.forEach((line) => {
-          if (maxWidth < line.offsetWidth) maxWidth = line.offsetWidth
-        })
-  
-        const firstLine = lineBody.querySelector("div")
-  
-        let lineHeight = firstLine ? firstLine.offsetHeight : 20
-  
-        const numbersWidth = numbers ? (document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement).offsetWidth : 0
-        
-        
-        
-        return { 
-          top: rect.top,
-          left: rect.left - numbersWidth,
-          width: maxWidth + numbersWidth,
-          height: linesOfSource * lineHeight
-        }
-      }, linesOfSource, options.numbers)
-  
-  
-      for (let k in bounds) {
-        bounds[k] = bounds[k] * options.resolutionFactor
-      }
-  
-  
-      console.log("Waiting...")
-  
-      await delay(3000)
-  
-      console.log("Screenshotting...")
-  
-      await page.screenshot({path: tempFilename + ".png"})
-      browser.close()
-  
-      
-  
-      console.log("cropping image...")
-      await sharp(tempFilename + ".png").extract(bounds).toFile(endFilename + ".png")
-      
-  
-  
-
-      console.log("done")
-    })()
-    
-    
-    return {
-      id: endFilename.split("/").last,
-      done
-    }
-    
-    
-    
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-
-    
-    
-  }
 
     
 })()

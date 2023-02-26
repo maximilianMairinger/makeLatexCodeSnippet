@@ -8,7 +8,8 @@ import input from "./../input/input"
 import Button from "./../_button/_rippleButton/blockButton/blockButton"
 import copy from "copy-to-clipboard"
 import LogDisplay from "./../logDisplay/logDisplay"
-import { bindInstanceFuncs, functionBasedWsServer } from "../../../server/src/wsUtil"
+import { bindInstanceFuncs, functionBasedWsClient, functionBasedWsServer } from "../../../server/src/wsUtil"
+import { ExportedFunctions as ExportedServerFunctions } from "../../../server/src/server"
 
 
 
@@ -52,7 +53,7 @@ export default class Site extends Component {
     settingsBod.apd(name)
 
 
-    const resolution = input("Resolution Factor", "integer", undefined, 6)
+    const resolution = input("Resolution Factor", "integer", undefined, 1)
     settingsBod.apd(resolution)
 
     const lang = input("Language extension", undefined, undefined, "js")
@@ -82,21 +83,18 @@ export default class Site extends Component {
     let lastId: any
     let curNameValue: string
     const btn = new Button("Lets go", async () => {
-      let r = await post("renderPls", {
-        source: txt.value,
-        options: {
-          resolutionFactor: (resolution.value() !== "" && !isNaN(+resolution.value())) ? +resolution.value() : undefined,
-          numbers: numbers.checked,
-          lang: lang.value(),
-          autoFormat: format.checked
-        }
-      }) as {id: string}
-      lastId = r.id
+
+      const id = await server.renderPls(txt.value, {
+        resolutionFactor: (resolution.value() !== "" && !isNaN(+resolution.value())) ? +resolution.value() : undefined,
+        numbers: numbers.checked,
+        lang: lang.value(),
+        autoFormat: format.checked
+      })
 
       result.style.display = "block"
       copyBtn.style.display = "block"
 
-      curNameValue = name.value() || r.id
+      curNameValue = name.value() || id
 
       const lines = txt.value.split("\n").length
 
@@ -156,8 +154,10 @@ declareComponent("site", Site)
 
 
 const logDisplay = new LogDisplay()
-export const web = functionBasedWsServer("ws://127.0.0.1:6500/ws", bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
+const ws = new WebSocket("ws://127.0.0.1:6500/ws")
+export const webLog = functionBasedWsServer(ws as any, bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
 
+const server = functionBasedWsClient<ExportedServerFunctions>(ws as any)
 
 
 

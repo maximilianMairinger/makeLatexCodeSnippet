@@ -28,22 +28,29 @@ function normalizeWsUrlProtocol(url: string) {
 }
 
 
+export type FunctionMapWithPromisesAsReturnType<FunctionMap extends {[key in string]: (...a: unknown[]) => unknown}> = {
+  [key in keyof FunctionMap]: (...a: Parameters<FunctionMap[key]>) => ReturnType<FunctionMap[key]> extends Promise<any> ? ReturnType<FunctionMap[key]> : Promise<ReturnType<FunctionMap[key]>>
+}
+
+
 export function functionBasedWsServer<FunctionMap extends {[key in string]: (...a: unknown[]) => unknown}>(ws_url: WebSocket | string, functions: FunctionMap) {
   const ws = (typeof ws_url === "string" ? new WebSocket(normalizeWsUrlProtocol(ws_url)) : ws_url) as any as WebSocket
-  ws.on("message", ({data: msg}) => {
-    const { c } = parse(msg)
-    if (c) {
+  ws.on("message", (data) => {
+    const { c, id } = parse(typeof data === "string" ? data : data.data)
+    if (c !== undefined) {
       for (let key in c) {
         const func = functions[key]
         if (func) {
-          const result = func(...c[key])
-          console.log("sending", result)
-          ws.send(stringify({r: {[key]: result}}))
+          (async () => {
+            const result = await func(...c[key])
+            console.log("sending", result)
+            ws.send(stringify({r: {[id]: result}}))
+          })()
         }
       }
     }
   })
-  return functions
+  return functions as FunctionMapWithPromisesAsReturnType<FunctionMap>
 }
 
 export function functionBasedWsClient<FunctionMap extends {[key in string]: (...a: unknown[]) => unknown}>(ws: WebSocket | Promise<WebSocket>) {
@@ -55,9 +62,9 @@ export function functionBasedWsClient<FunctionMap extends {[key in string]: (...
   
 
   function go(ws: WebSocket) {
-    ws.on("message", ({data: msg}) => {
-      const { r } = parse(msg)
-      if (r) {
+    ws.on("message", (data) => {
+      const { r } = parse(typeof data === "string" ? data : data.data)
+      if (r !== undefined) {
         for (const key in r) {
           const ret = returnMap.get(+key)
           if (ret === undefined) {
@@ -75,9 +82,10 @@ export function functionBasedWsClient<FunctionMap extends {[key in string]: (...
     get(target, prop: string) {
       return (...args: unknown[]) => {
         return new Promise(async (res) => {
-          returnMap.set(id++, res);
+          const myId = id++
+          returnMap.set(myId, res);
           console.log("sending", args);
-          (await ws).send(stringify({c: {[prop]: args}}))
+          (await ws).send(stringify({id: myId, c: {[prop]: args}}))
         })
       }
     }
