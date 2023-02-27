@@ -70,6 +70,9 @@ textarea {
   width: 600px;
   height: 400px;
   max-width: 100%;
+  resize: none;
+  color: inherit;
+  background-color: transparent;
 }
 
 textarea#result {
@@ -97,4 +100,11 @@ c-log-display {
 btn-container {
   width: 100%;
   display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  component-body {
+    background: rgb(35, 35, 35);
+    color: white;
+  }
 }
