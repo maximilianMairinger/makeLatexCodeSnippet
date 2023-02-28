@@ -152,14 +152,14 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         r.done.then(() => {
           inRender.delete(r.id)
         }).catch(async (e) => {
-          log("failed once will try one more time")
+          error("failed once will try one more time")
           console.log(r.id)
           console.log(e)
           const r2 = await render(sourceCode, options)
           r2.done.then(() => {
             inRender.delete(r.id)
           }).catch(() => {
-            log("Meh, failed again")
+            error("Meh, failed again")
             console.log(r.id)
             inRender.delete(r.id)
           })
