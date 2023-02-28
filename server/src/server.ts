@@ -195,6 +195,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         options = merge(defaultOptions, options) as any
 
 
+
         const browser = await puppeteer.launch({ 
           headless: true,
           args: ['--no-sandbox']
@@ -399,6 +400,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           }
 
 
+
           if (!suc) {
             error("Failed to install theme dark")
             throw new Error("Failed to install theme dark")
@@ -471,8 +473,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           
         }
 
-        const linesAddedAtEnd = 3
-        await addEmptyLinesAtEnd(linesAddedAtEnd)
+        await addEmptyLinesAtEnd(1)
 
         
         await delay(200)
@@ -492,20 +493,16 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         }
 
 
-        await clickSeachTab()
-        await delay(50)
-        await clickSeachTab()
-
 
         log(`Getting code bounds`)
 
         let bounds: any
         try {
-          bounds = await page.evaluate((numbers, fontSize, linesAddedAtEnd) => {
+          bounds = await page.evaluate((numbers, fontSize) => {
             const lineBody = document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text")
             const rect = lineBody.getBoundingClientRect()
             const lines = lineBody.querySelectorAll("div > div > span") as NodeListOf<HTMLElement>
-            const linesOfSource = lines.length - linesAddedAtEnd + 1
+            const linesOfSource = lines.length - 2
       
             let maxWidth = 0
             lines.forEach((line) => {
@@ -520,20 +517,18 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
             
             
             
+
             return { 
               top: rect.top,
               left: rect.left - numbersWidth,
               width: maxWidth + numbersWidth,
               height: linesOfSource * lineHeight
             }
-          }, options.numbers, editorConfig["editor.fontSize"], linesAddedAtEnd)
+          }, options.numbers, editorConfig["editor.fontSize"])
         }
         catch(e) {
           error(`Unable to get code bounds, hence cannot crop image. Continuing...`)
         }
-        
-
-        
         
 
 
