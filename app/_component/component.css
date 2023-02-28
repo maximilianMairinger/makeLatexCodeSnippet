@@ -38,3 +38,13 @@ component-body {
   letter-spacing: .5px;
   font-family: 'PT Sans', sans-serif;
 }
+
+
+@media (prefers-color-scheme: dark) {
+  component-body {
+    color: white
+  }
+  ::selection {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}

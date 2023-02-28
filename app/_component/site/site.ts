@@ -91,8 +91,6 @@ export default class Site extends Component {
     themeBody.apd(theme as any)
 
     
-
-    let lastId: any
     let curNameValue: string
     const btnContainer = ce("btn-container")
     const btn = new Button("Lets go", async () => {
@@ -102,8 +100,11 @@ export default class Site extends Component {
         numbers: numbers.checked,
         lang: lang.value(),
         autoFormat: format.checked,
-        theme: theme.value as "dark" | "light-pure" | "light-offwhite"
+        theme: theme.value as "dark" | "light-pure" | "light-offwhite",
+        name: name.value() || undefined
       })
+
+      startDownload(id)
 
       result.style.display = "block"
       copyBtn.style.display = "block"
@@ -124,16 +125,13 @@ export default class Site extends Component {
 
 
 
-    const startDownload = () => {
-      if (!lastId) return
-      console.log("http://" + location.host + "/renders/" + lastId + ".png")
-      download("http://" + location.host + "/renders/" + lastId + ".png", curNameValue)
-      lastId = undefined
+    const startDownload = (id: string) => {
+      if (!id) return
+      console.log("http://" + location.host + "/renders/" + id + ".png")
+      download("http://" + location.host + "/renders/" + id + ".png", curNameValue)
+      id = undefined
     }
 
-    setTimeout(() => {
-      startDownload()
-    1000})
 
     const result = document.createElement("textarea")
     result.contentEditable = "false"

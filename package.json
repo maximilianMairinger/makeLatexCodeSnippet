@@ -108,7 +108,7 @@
     "sharp": "^0.28.0",
     "slash": "^3.0.0",
     "slugger": "^1.0.1",
-    "slugify": "^1.5.0",
+    "slugify": "^1.6.5",
     "uid-safe": "^2.1.5",
     "unique-filename": "^1.1.1"
   },

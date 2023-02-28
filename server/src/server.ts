@@ -101,6 +101,10 @@ function slugPath(path) {
   return slash(path).split("/").map((s) => slugify(s)).join("/")
 }
 
+function slugName(name: string) {
+  return slugify(name).split("/").join("")
+}
+
 function constrIncHash(prefix: string | (() => string), postfix: string | (() => string) = "", initCount = 0) {
   let uid = initCount
   return async function fileHash() {
@@ -113,7 +117,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   return constrIncHash((filename instanceof Function ? () => path + filename() : path + filename), postFix, (await fs.readdir(path)).length)
 }
 
-type RenderOptions = {lang?: string, theme?: "dark" | "light-pure" | "light-offwhite", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number, }
+type RenderOptions = {lang?: string, theme?: "dark" | "light-pure" | "light-offwhite", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number, name?: string }
 export type ExportedFunctions = FunctionMapWithPromisesAsReturnType<{
   renderPls: (src: string, options: RenderOptions) => Promise<string>
 }>
@@ -174,7 +178,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
     const render = async (source: string, options: RenderOptions = {}) => {
 
-      const [ tempFilename, endFilename ] = await Promise.all([tempHash(), endHash()])
+      const [ tempFilename, endFilename ] = await Promise.all([tempHash(), options.name === undefined ? endHash() : "public/renders/" + slugName(options.name)])
       console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n" + source)
 
       optionsTypechecking(options)
@@ -189,7 +193,6 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
       const done = (async () => {
         options = merge(defaultOptions, options) as any
-
 
 
         const browser = await puppeteer.launch({ 
@@ -281,7 +284,11 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
         const clickExplorerTab = async () => {
-          await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(1) > div.badge.explorer-viewlet-label")
+          await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(1) > a")
+        }
+
+        const clickSeachTab = async () => {
+          await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(2) > a")
         }
 
         const clickAddonsTab = async () => {
@@ -485,6 +492,11 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         }
 
 
+        await clickSeachTab()
+        await delay(50)
+        await clickSeachTab()
+
+
         log(`Getting code bounds`)
 
         let bounds: any
@@ -522,7 +534,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         
 
         
-
+        
 
 
         console.log(bounds)
