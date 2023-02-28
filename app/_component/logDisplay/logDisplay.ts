@@ -21,12 +21,14 @@ export default class LogDisplay extends Element {
   }
 
   log(e: string | Data<string>) {
+    console.log("log", e)
     this.empty.set(false)
     const el = ce("log-line")
     el.txt(e)
     this.apd(el)
   }
   error(e: string | Data<string>) {
+    console.error("error", e)
     this.empty.set(false)
     const el = ce("log-line")
     el.txt(e)
@@ -35,6 +37,7 @@ export default class LogDisplay extends Element {
   }
 
   ask(question: string, {type = "text"}: {type?: "text" | "number" | "password" | "new-password"} = {}) {
+    console.log("ask", question, type)
     this.empty.set(false)
     return new Promise((res) => {
       const el = ce("log-line")
