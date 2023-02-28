@@ -7,7 +7,7 @@ export type WsAttachment = { ws: ((path: string, cb: (ws: {on: WsOnFunc, send: W
 
 
 
-function normalizeWsUrlProtocol(url: string) {
+export function normalizeWsUrlProtocol(url: string) {
   
   if (url.startsWith("ws://")) return url
   else if (url.startsWith("wss://")) return url

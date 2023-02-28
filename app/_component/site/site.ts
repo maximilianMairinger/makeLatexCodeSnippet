@@ -8,7 +8,7 @@ import input from "./../input/input"
 import Button from "./../_button/_rippleButton/blockButton/blockButton"
 import copy from "copy-to-clipboard"
 import LogDisplay from "./../logDisplay/logDisplay"
-import { bindInstanceFuncs, functionBasedWsClient, functionBasedWsServer } from "../../../server/src/wsUtil"
+import { bindInstanceFuncs, functionBasedWsClient, functionBasedWsServer, normalizeWsUrlProtocol } from "../../../server/src/wsUtil"
 import { ExportedFunctions as ExportedServerFunctions } from "../../../server/src/server"
 
 
@@ -169,8 +169,8 @@ declareComponent("site", Site)
 
 
 const logDisplay = new LogDisplay()
-const ws = new WebSocket("/ws")
-export const webLog = functionBasedWsServer(ws as any, bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
+const ws = new WebSocket(normalizeWsUrlProtocol("/ws"))
+export const webLog = functionBasedWsServer("/" as any, bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
 
 const server = functionBasedWsClient<ExportedServerFunctions>(ws as any)
 
