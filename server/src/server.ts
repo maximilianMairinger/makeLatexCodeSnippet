@@ -338,7 +338,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await page.reload()
 
 
-        await page.waitForSelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div > div.monaco-scrollable-element.full-height-scrollable.categoriesScrollbar.mac > div.gettingStartedSlideCategories.gettingStartedSlide > div > div.categories-column.categories-column-left > div.index-list.start-container > div > ul > li:nth-child(1) > button")
+        await page.waitForSelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div > div.monaco-scrollable-element.full-height-scrollable.categoriesScrollbar > div.gettingStartedSlideCategories.gettingStartedSlide > div > div.categories-column.categories-column-left > div.index-list.start-container > div > ul > li:nth-child(1) > button")
 
         await delay(3000)
 
@@ -481,8 +481,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         if (options.theme === "light-pure") {
           try {
             page.evaluate(() => {
-              (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs.mac > div.lines-content.monaco-editor-background") as HTMLElement).style.backgroundColor = "white";
-              (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div:nth-child(1)") as HTMLElement).style.backgroundColor = "white";
+              (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs > div.lines-content.monaco-editor-background") as HTMLElement).style.backgroundColor = "white";
+              (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div:nth-child(1)") as HTMLElement).style.backgroundColor = "white";
             })
           }
           catch(e) {
@@ -502,7 +502,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         let bounds: any
         try {
           bounds = await page.evaluate((numbers, fontSize, linesAddedAtEnd) => {
-            const lineBody = document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text")
+            const lineBody = document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text")
             const rect = lineBody.getBoundingClientRect()
             const lines = lineBody.querySelectorAll("div > div > span") as NodeListOf<HTMLElement>
             const linesOfSource = lines.length - linesAddedAtEnd + 1
@@ -516,7 +516,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
       
             let lineHeight = firstLine ? firstLine.offsetHeight : (fontSize + 3) 
       
-            const numbersWidth = numbers === undefined ? (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div:nth-child(1)") as HTMLElement).offsetWidth : 0
+            const numbersWidth = numbers === undefined ? (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div:nth-child(1)") as HTMLElement).offsetWidth : 0
             
             
             
