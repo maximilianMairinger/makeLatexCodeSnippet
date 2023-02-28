@@ -169,7 +169,7 @@ declareComponent("site", Site)
 
 
 const logDisplay = new LogDisplay()
-const ws = new WebSocket("ws://127.0.0.1:6500/ws")
+const ws = new WebSocket("/ws")
 export const webLog = functionBasedWsServer(ws as any, bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
 
 const server = functionBasedWsClient<ExportedServerFunctions>(ws as any)
