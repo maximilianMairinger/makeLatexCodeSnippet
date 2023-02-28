@@ -197,11 +197,12 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
         const browser = await puppeteer.launch({ 
-          headless: false,
+          headless: true,
           args: ['--no-sandbox']
         })
-        const page = await browser.newPage()
 
+        const page = await browser.newPage()
+        page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4427.0 Safari/537.36")
     
         const activeElement = async () => await page.evaluateHandle(() => document.activeElement) as any
         const type = async (text: string, ms?: number) => await (await activeElement()).type(text, ms ? {delay: ms} : undefined)
@@ -529,7 +530,6 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         catch(e) {
           error(`Unable to get code bounds, hence cannot crop image. Continuing...`)
         }
-        await delay(10000000)
 
 
         console.log(bounds)
