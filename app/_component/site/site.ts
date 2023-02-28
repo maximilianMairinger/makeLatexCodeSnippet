@@ -53,7 +53,7 @@ export default class Site extends Component {
     settingsBod.apd(name)
 
 
-    const resolution = input("Resolution Factor", "integer", undefined, 1)
+    const resolution = input("Resolution Factor", "integer", undefined, 3)
     settingsBod.apd(resolution)
 
     const lang = input("Language extension", undefined, undefined, "js")
@@ -81,13 +81,14 @@ export default class Site extends Component {
     format.checked = true
 
     const themeBody = ce("format-body")
-    const theme = document.createElement("input")
-    const themeLabel = document.createElement("label")
-    theme.id = format.name = themeLabel.htmlFor = "theme"
-    themeLabel.innerText = "Dark Theme"
-    theme.type = "checkbox"
+    const theme = document.createElement("select")
+    theme.id = theme.name = "theme";
+    theme.options.add(new Option("Light (Pure)", "light-pure"))
+    theme.options.add(new Option("Light (Offwhite)", "light-offwhite"))
+    theme.options.add(new Option("Dark", "dark"))
+    theme.value = "light-pure"
     settingsBod.apd(themeBody)
-    themeBody.apd(theme as any, themeLabel)
+    themeBody.apd(theme as any)
 
     
 
@@ -101,7 +102,7 @@ export default class Site extends Component {
         numbers: numbers.checked,
         lang: lang.value(),
         autoFormat: format.checked,
-        theme: theme.checked ? "dark" : "light"
+        theme: theme.value as "dark" | "light-pure" | "light-offwhite"
       })
 
       result.style.display = "block"

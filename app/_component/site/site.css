@@ -102,8 +102,19 @@ btn-container {
   display: block;
 }
 
+select {
+  font-size: 15px;
+  padding: 10px 7px;
+  
+  border-radius: 5px;
+}
+
 @media (prefers-color-scheme: dark) {
   component-body {
+    background: rgb(35, 35, 35);
+    color: white;
+  }
+  select {
     background: rgb(35, 35, 35);
     color: white;
   }

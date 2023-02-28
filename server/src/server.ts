@@ -49,8 +49,10 @@ const editorConfig = {
     "editorWarning.foreground": "#00000000",
     "editorOverviewRuler.errorForeground": "#00000000",
     "editorOverviewRuler.warningForeground": "#00000000",
-  }
+  },
+  "prettier.semi": false
 }
+
 
 
 
@@ -111,7 +113,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   return constrIncHash((filename instanceof Function ? () => path + filename() : path + filename), postFix, (await fs.readdir(path)).length)
 }
 
-type RenderOptions = {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number, }
+type RenderOptions = {lang?: string, theme?: "dark" | "light-pure" | "light-offwhite", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number, }
 export type ExportedFunctions = FunctionMapWithPromisesAsReturnType<{
   renderPls: (src: string, options: RenderOptions) => Promise<string>
 }>
@@ -148,7 +150,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           log("failed once will try one more time")
           console.log(r.id)
           console.log(e)
-          const r2 = await render(sourceCode, options, r.id)
+          const r2 = await render(sourceCode, options)
           r2.done.then(() => {
             inRender.delete(r.id)
           }).catch(() => {
@@ -169,9 +171,9 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
 
-    const render = async (source: string, options: RenderOptions = {}, forceEndFilename?: string) => {
+    const render = async (source: string, options: RenderOptions = {}) => {
 
-      const [ tempFilename, endFilename ] = await Promise.all([tempHash(), (() => forceEndFilename !== undefined ? forceEndFilename : endHash())()])
+      const [ tempFilename, endFilename ] = await Promise.all([tempHash(), endHash()])
       console.log("render request at ", nowStr(), "filename: ", endFilename, "source: \n" + source)
 
       optionsTypechecking(options)
@@ -256,11 +258,12 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         const cmd = async (cmd: string) => {
           await openCmdPallet()
-          await delay(100)
           await type(cmd)
+          await delay(150)
           await enter()
           await delay(300)
         }
+
 
 
         const cmdA = async () => {
@@ -275,7 +278,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         }
 
 
-        
+
         const clickExplorerTab = async () => {
           await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(1) > div.badge.explorer-viewlet-label")
         }
@@ -290,25 +293,36 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         }
 
 
+        const addEmptyLinesAtEnd = async (lines: number) => {
+          let txt = ""
+          for (let i = 0; i < lines; i++) {
+            txt += "\n"
+          }
+          // go to end of file
+          await cmdKey.down()
+          await page.keyboard.press("End")
+          await cmdKey.up()
+          await type(txt)
+        }
 
 
-        const linesOfSource = source.split("\n").length
 
-
+        const averageCharactersPerLine = 20
+        const estimateLinesOfSource = Math.ceil(source.length / averageCharactersPerLine)
         
 
     
 
         await page.setViewport({
           width: 1610,
-          height: 780 + (20 * linesOfSource),
+          height: 780 + ((editorConfig["editor.fontSize"] + 3) * estimateLinesOfSource),
           deviceScaleFactor: options.resolutionFactor
         });
         console.log("Loading site...")
 
 
 
-
+        log(`Opening vscode`)
 
 
         await page.goto(`http://127.0.0.1:${await vsCodePort}`)
@@ -320,6 +334,10 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         await delay(3000)
 
+
+        log(`Setting user settings`)
+        
+
         await cmd("open user settings json")
         await delay(200)
         await deleteAll()
@@ -328,15 +346,17 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await type(JSON.stringify(editorConfig))
         await delay(2000)
 
+        log(`Writing your code to file`)
+
         await cmd("new file")
         await delay(50)
         await enter()
         
-        await delay(200)
-
-
-
+        await delay(100)
         await type(source)
+
+        log(`Setting language`)
+
         await click("#status\\.editor\\.mode > a")
         await type(fileExtensionsToLang[options.lang])
         await enter()
@@ -344,6 +364,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await delay(500)
 
 
+        log(`Setting theme`)
 
 
         if (options.theme === "dark") {
@@ -369,12 +390,13 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
             }
           }
 
+
           if (!suc) {
             error("Failed to install theme dark")
             throw new Error("Failed to install theme dark")
           }
         }
-        else {
+        else if (options.theme.includes("light")) {
           let triedCount = 0
           let suc = false
           while (triedCount < 3) {
@@ -406,9 +428,10 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           }
         }
 
-        
 
         if (options.autoFormat){
+          log(`Formatting code`)
+
           let triedCount = 0
           let suc = false
           while(triedCount++ < 3) {
@@ -423,6 +446,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               await delay(2000)
               await delay(200)
               await cmdW()
+              await delay(500)
+              await cmd("format document force")
               suc = true
               break
             }
@@ -438,19 +463,98 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           
         }
 
-        await delay(500)
-
-
-        cmd("format document force")
+        const linesAddedAtEnd = 3
+        await addEmptyLinesAtEnd(linesAddedAtEnd)
 
         
         await delay(200)
 
         
+        if (options.theme === "light-pure") {
+          try {
+            page.evaluate(() => {
+              (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs.mac > div.lines-content.monaco-editor-background") as HTMLElement).style.backgroundColor = "white";
+              (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div:nth-child(1)") as HTMLElement).style.backgroundColor = "white";
+            })
+          }
+          catch(e) {
+            error(`Unable to set pure light theme, continuing...`)
+          }
+          
+        }
+
+
+        log(`Getting code bounds`)
+
+        let bounds: any
+        try {
+          bounds = await page.evaluate((numbers, fontSize, linesAddedAtEnd) => {
+            const lineBody = document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text")
+            const rect = lineBody.getBoundingClientRect()
+            const lines = lineBody.querySelectorAll("div > div > span") as NodeListOf<HTMLElement>
+            const linesOfSource = lines.length - linesAddedAtEnd + 1
+      
+            let maxWidth = 0
+            lines.forEach((line) => {
+              if (maxWidth < line.offsetWidth) maxWidth = line.offsetWidth
+            })
+      
+            const firstLine = lineBody.querySelector("div > div > span") as HTMLSpanElement
+      
+            let lineHeight = firstLine ? firstLine.offsetHeight : (fontSize + 3) 
+      
+            const numbersWidth = numbers === undefined ? (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element.mac > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div:nth-child(1)") as HTMLElement).offsetWidth : 0
+            
+            
+            
+            return { 
+              top: rect.top,
+              left: rect.left - numbersWidth,
+              width: maxWidth + numbersWidth,
+              height: linesOfSource * lineHeight
+            }
+          }, options.numbers, editorConfig["editor.fontSize"], linesAddedAtEnd)
+        }
+        catch(e) {
+          error(`Unable to get code bounds, hence cannot crop image. Continuing...`)
+        }
+        
+
+        
 
 
 
-        console.log("cmd pallet opened")
+        console.log(bounds)
+
+        log(`Taking screenshot`)
+
+        await page.screenshot({path: tempFilename + ".png"})
+        browser.close()
+        
+
+
+        if (bounds) {
+          for (let k in bounds) {
+            bounds[k] = bounds[k] * options.resolutionFactor
+          }
+          log(`Cropping image`)
+          try {
+            await sharp(tempFilename + ".png").extract(bounds).toFile(endFilename + ".png")
+          }
+          catch(e) {
+            error(`Unable to crop image. Primary sharp failure. Continuing...`)
+            await fs.copyFile(tempFilename + ".png", endFilename + ".png")
+          }
+          
+        }
+        else {
+          await fs.copyFile(tempFilename + ".png", endFilename + ".png")
+        }
+
+        
+
+
+        log(`Done`)
 
         await delay(10000000)
         
