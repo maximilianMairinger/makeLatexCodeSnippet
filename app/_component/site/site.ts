@@ -67,6 +67,7 @@ export default class Site extends Component {
     numbers.type = "checkbox"
     settingsBod.apd(numbersBody)
     numbersBody.apd(numbers as any, numbersLabel)
+    numbers.checked = true
 
 
     const formatBody = ce("format-body")
@@ -77,6 +78,7 @@ export default class Site extends Component {
     format.type = "checkbox"
     settingsBod.apd(formatBody)
     formatBody.apd(format as any, formatLabel)
+    format.checked = true
 
     const themeBody = ce("format-body")
     const theme = document.createElement("input")

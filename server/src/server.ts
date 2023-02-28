@@ -18,28 +18,40 @@ const isMacOs = os.platform() === 'darwin'
 
 
 
+
 const editorConfig = {
   "editor.formatOnSave": false,
   "editor.fontSize": 18,
-  "editor.tabSize": 2,
+  // "editor.tabSize": 2,
   "editor.minimap.enabled": false,
   "workbench.editor.openSideBySideDirection": "down",
-  "svelte.plugin.typescript.diagnostics.enable": false,
   "javascript.autoClosingTags": false,
   "typescript.autoClosingTags": false,
-  "typescript.tsserver.useSeparateSyntaxServer": false,
-  "workbench.colorTheme": "Atom One Dark",
+  "typescript.tsserver.useSyntaxServer": "never",
+  "workbench.colorTheme": "Visual Studio Light",
   "html.autoClosingTags": false,
   "typescript.locale": "en",
   "editor.wrappingIndent": "none",
-  "editor.autoIndent": false,
-  "editor.quickSuggestions": false,
-  "editor.autoClosingBrackets": false,
+  "editor.autoIndent": "none",
+  "editor.quickSuggestions": {
+    "comments": "off",
+    "other": "off",
+    "strings": "off"
+  },
+  "editor.autoClosingBrackets": "never",
   "editor.formatOnType": false,
   "editor.acceptSuggestionOnEnter": "off",
   "editor.wordWrap": "on",
-  "editor.matchBrackets": "never"
+  "editor.matchBrackets": "never",
+  "editor.bracketPairColorization.enabled": false,
+  "workbench.colorCustomizations": {
+    "editorError.foreground": "#00000000",
+    "editorWarning.foreground": "#00000000",
+    "editorOverviewRuler.errorForeground": "#00000000",
+    "editorOverviewRuler.warningForeground": "#00000000",
+  }
 }
+
 
 
 
@@ -99,7 +111,7 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   return constrIncHash((filename instanceof Function ? () => path + filename() : path + filename), postFix, (await fs.readdir(path)).length)
 }
 
-type RenderOptions = {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number}
+type RenderOptions = {lang?: string, theme?: "dark" | "light", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number, }
 export type ExportedFunctions = FunctionMapWithPromisesAsReturnType<{
   renderPls: (src: string, options: RenderOptions) => Promise<string>
 }>
@@ -176,6 +188,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         options = merge(defaultOptions, options) as any
 
 
+
         const browser = await puppeteer.launch({ 
           headless: false,
           args: ['--no-sandbox']
@@ -195,6 +208,12 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           await page.keyboard.up('Control');
           await page.keyboard.up('Shift');
           await clip.write(before)
+        }
+
+        const cmdW = async () => {
+          await cmdKey.down()
+          await page.keyboard.press('KeyW')
+          await cmdKey.up()
         }
 
 
@@ -237,15 +256,39 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         const cmd = async (cmd: string) => {
           await openCmdPallet()
+          await delay(100)
           await type(cmd)
           await enter()
           await delay(300)
         }
 
 
+        const cmdA = async () => {
+          await cmdKey.down()
+          await page.keyboard.press('KeyA')
+          await cmdKey.up()
+        }
+
+        const deleteAll = async () => {
+          await cmdA()
+          await page.keyboard.press("Backspace")
+        }
+
+
+        
+        const clickExplorerTab = async () => {
+          await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(1) > div.badge.explorer-viewlet-label")
+        }
+
+        const clickAddonsTab = async () => {
+          await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(5) > a")
+        }
+
+
         const enter = async () => {
           await page.keyboard.press("Enter")
         }
+
 
 
 
@@ -257,7 +300,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
     
 
         await page.setViewport({
-          width: 1210,
+          width: 1610,
           height: 780 + (20 * linesOfSource),
           deviceScaleFactor: options.resolutionFactor
         });
@@ -278,10 +321,10 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await delay(3000)
 
         await cmd("open user settings json")
-        await delay(500)
-        await cmd("select all")
-        await page.keyboard.press("Backspace")
-        
+        await delay(200)
+        await deleteAll()
+        await delay(100)
+
         await type(JSON.stringify(editorConfig))
         await delay(2000)
 
@@ -292,6 +335,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await delay(200)
 
 
+
         await type(source)
         await click("#status\\.editor\\.mode > a")
         await type(fileExtensionsToLang[options.lang])
@@ -300,32 +344,107 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await delay(500)
 
 
-        // this takes some time but works in the background
-        // todo: this scrolls down couse the cursor will always be at the top of the screen but is at the bottom of text after input. TODO: move cursor to pos1 before formatting
-        if (options.autoFormat) await cmd("format document")
-
-        // if (options.theme === "dark") {
-        //   await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(5) > a")
-        //   await type("codesandbox theme")
-        //   await delay(4000)
-        //   // document.querySelector("#list_id_7_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
-        //   await click("#list_id_7_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
-        //   await delay(2000)
-        //   await click("#list_id_2_2 > div > label > div > div:nth-child(1) > div.monaco-icon-label > div")
-        //   await delay(2000)
-        // }
-        // else {
-        //   await openCmdPallet()
-        //   await type("pref theme")
-        //   await delay(200)
-        //   await enter()
-        //   await delay(200)
-        //   await type("light visual studio")
-        //   await enter()
-        //   await delay(200)
-        // }
 
 
+        if (options.theme === "dark") {
+          let triedCount = 0
+          let suc = false
+          while (triedCount < 3) {
+            try {
+              await clickAddonsTab()
+              await type("codesandbox theme")
+              await delay(4000)
+              // document.querySelector("#list_id_7_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+              await click("#list_id_7_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+              await delay(2000)
+              await click("#list_id_2_2 > div > label > div > div:nth-child(1) > div.monaco-icon-label > div")
+              await delay(2000)
+              await cmdW()
+              suc = true
+              break
+            }
+            catch (e) {
+              await clickExplorerTab()
+              error(`Failed ${triedCount} to install theme dark`)
+            }
+          }
+
+          if (!suc) {
+            error("Failed to install theme dark")
+            throw new Error("Failed to install theme dark")
+          }
+        }
+        else {
+          let triedCount = 0
+          let suc = false
+          while (triedCount < 3) {
+            try {    
+              await clickAddonsTab()
+              await type("atom one light")
+              await delay(4000)
+              
+
+              
+              // document.querySelector("#list_id_8_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+              await click("#list_id_8_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+              await delay(2000)
+              await click("#list_id_1_0 > div > label > div > div:nth-child(1) > div.monaco-icon-label > div")
+              await delay(200)
+              await cmdW()
+              suc = true
+              break
+            }
+            catch (e) {
+              await clickExplorerTab()
+              error(`Failed ${triedCount} to install theme light`)
+            }
+          }
+
+          if (!suc) {
+            error("Failed to install theme light")
+            throw new Error("Failed to install theme light")
+          }
+        }
+
+        
+
+        if (options.autoFormat){
+          let triedCount = 0
+          let suc = false
+          while(triedCount++ < 3) {
+            try {
+              await clickExplorerTab()
+              await delay(20)
+              await clickAddonsTab()
+              await deleteAll()
+              await type("prettier")
+              await delay(4000)
+              await click("#list_id_12_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+              await delay(2000)
+              await delay(200)
+              await cmdW()
+              suc = true
+              break
+            }
+            catch(e) {
+              error(`Failed ${triedCount} to install prettier`)
+            }
+          }
+          if (!suc) {
+            error("Failed to install prettier")
+            throw new Error("Failed to install prettier")
+          }
+          
+          
+        }
+
+        await delay(500)
+
+
+        cmd("format document force")
+
+        
+        await delay(200)
 
         
 
@@ -333,7 +452,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         console.log("cmd pallet opened")
 
-        
+        await delay(10000000)
         
 
 
@@ -541,8 +660,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
     }
 
     try {
-      render(`function slugPath(path) {return slash(path).split("/").map((s) => slugify(s)).join("/")
-}`, {})
+//       render(`function slugPath(path) {return slash(path).split("/").map((s) => slugify(s)).join("/")
+// }`, {})
     }
     catch(e) {console.error("failed render")}
     
@@ -594,6 +713,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
     autoFormat: true,
     resolutionFactor: 1
   }
+
+
 
   const typechecking = {
     theme: (t) => t === "light" || t === "dark",
