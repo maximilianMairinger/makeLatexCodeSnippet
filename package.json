@@ -103,7 +103,7 @@
     "ky": "^0.33.2",
     "needle": "^3.2.0",
     "phin": "^3.7.0",
-    "puppeteer": "^8.0.0",
+    "puppeteer": "^19.7.2",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.28.0",
     "slash": "^3.0.0",
