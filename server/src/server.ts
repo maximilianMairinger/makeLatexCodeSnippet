@@ -369,7 +369,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         log(`Setting language`)
 
-        await click("#status\\.editor\\.mode > a")
+        await cmd("change language mode")
         await type(fileExtensionsToLang[options.lang])
         await enter()
 

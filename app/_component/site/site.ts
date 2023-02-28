@@ -170,8 +170,6 @@ const logDisplay = new LogDisplay()
 const ws = new WebSocket(normalizeWsUrlProtocol("/ws"))
 export const webLog = functionBasedWsServer("/" as any, bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
 
-webLog.log("lel")
-
 const server = functionBasedWsClient<ExportedServerFunctions>(ws as any)
 
 
