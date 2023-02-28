@@ -141,6 +141,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
     functionBasedWsServer(ws, {
       async renderPls(sourceCode: string, options: RenderOptions) {
+        
         const r = await render(sourceCode, options)    
         inRender.set(r.id + ".png", r.done)
         
@@ -555,211 +556,14 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
         log(`Done`)
-
-        await delay(10000000)
         
 
-
-      //   if (options.theme.toLowerCase().includes("light")) {
-      //     editorConfig["workbench.colorTheme"] = "Atom One Light"
-      //   }
-
-      //   console.log("Open settings...")
-
-      //   await openSettings()
-      //   page.evaluate(() => {
-      //     (document.querySelector("#vscode-editor > div > div > div > div > div > div.split-view-container > div > div > div.title.tabs.show-file-icons > div.tabs-and-actions-container > div.editor-actions > div > div > ul > li:nth-child(1) > a") as HTMLElement).click()
-      //   })
-      //   await delay(2500)
-      //   await page.keyboard.down('ControlLeft')
-      //   await page.keyboard.press('A')
-      //   await page.keyboard.up('ControlLeft')
-      //   await page.keyboard.press("Backspace")
-
-      
-
-      //   await delay(100)
-      //   await type(JSON.stringify(editorConfig))
-      //   await save()
-      //   await delay(500)
-      //   await openSettings()
-
-        
-
-      //   console.log("Confirming settings...")
-
-      //   await type("Editor: Drag and drop")
-      //   await delay(1000)
-      //   await page.keyboard.press("ArrowDown")
-      //   await delay(1000)
-      //   await page.keyboard.press("Enter")
-      //   await delay(3000)
-
-        
-
-      //   console.log("Close everything...")
-
-
-      //   await openCmdPallet()
-      //   await type("view: close all editors")
-      //   await delay(1500)
-      //   await page.keyboard.press("Enter")
-      //   await delay(1000)
-
-
-
-
-        
-      //   console.log("New file...")
-          
-      //   await openCmdPallet()
-    
-      //   await delay(200)
-    
-      //   await type('new file')
-    
-      //   await delay(1000)
-    
-      //   await page.keyboard.press('Enter')
-    
-      //   await delay(500)
-
-      //   await type(source)
-
-      //   await delay(500)
-
-        
-      //   console.log("Saving file...")
-    
-    
-      //   if (options.autoFormat) {
-      //     await save()
-      //   }
-      //   else { 
-      //     await openCmdPallet()
-      //     await delay(200)
-      //     await type("file: save without formatting")
-      //     await delay(2000)
-      //     await page.keyboard.press('Enter')  
-      //   }
-        
-    
-    
-      //   await delay(500)
-    
-      //   type(`/code.${options.lang}`)
-    
-      //   await delay(500)
-        
-      //   await page.keyboard.press('Enter')
-        
-      //   await delay(3000)
-
-
-    
-        
-
-    
-
-      //   console.log("Clear linting and doing the white thing...")
-    
-    
-      //   const suc = await page.evaluate((options) => {
-      //     const linting = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-overlays")
-      //     if (linting) linting.remove()
-    
-      //     if (options.theme === "light") {
-      //       const numbers = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement
-      //       if (numbers) numbers.style.backgroundColor = "white"
-    
-      //       const mainTextBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines") as HTMLElement
-      //       if (mainTextBody) mainTextBody.style.backgroundColor = "white"
-
-      //       return mainTextBody && numbers
-      //     }
-      //     else return true
-      //   }, options)
-
-      //   if (!suc) console.warn("Warning: unable to do the white thing. Will continue anyway")
-    
-      //   await delay(500)
-
-      //   console.log("Add extra lines...")
-    
-      //   await page.keyboard.down("ControlLeft")
-      //   await page.keyboard.press("End")
-      //   await page.keyboard.up("ControlLeft")
-    
-      //   await delay(500)
-    
-      //   await type("\n\n\n")
-    
-      //   await delay(500)
-    
-      //   await page.keyboard.down("ControlLeft")
-      //   await page.keyboard.press("End")
-      //   await page.keyboard.up("ControlLeft")
-    
-      //   await delay(500)
-
-      //   console.log("Get bounds...")
-    
-      //   const bounds = await page.evaluate((linesOfSource, numbers) => {
-      //     const lineBody = document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines")
-      //     const rect = lineBody.getBoundingClientRect()
-      //     const lines = lineBody.querySelectorAll("div > span") as NodeListOf<HTMLElement>
-    
-      //     let maxWidth = 0
-      //     lines.forEach((line) => {
-      //       if (maxWidth < line.offsetWidth) maxWidth = line.offsetWidth
-      //     })
-    
-      //     const firstLine = lineBody.querySelector("div")
-    
-      //     let lineHeight = firstLine ? firstLine.offsetHeight : 20
-    
-      //     const numbersWidth = numbers ? (document.querySelector("#workbench\\.editors\\.files\\.textFileEditor > div > div.overflow-guard > div.margin") as HTMLElement).offsetWidth : 0
-          
-          
-          
-      //     return { 
-      //       top: rect.top,
-      //       left: rect.left - numbersWidth,
-      //       width: maxWidth + numbersWidth,
-      //       height: linesOfSource * lineHeight
-      //     }
-      //   }, linesOfSource, options.numbers)
-    
-    
-      //   for (let k in bounds) {
-      //     bounds[k] = bounds[k] * options.resolutionFactor
-      //   }
-    
-    
-      //   console.log("Waiting...")
-    
-      //   await delay(3000)
-    
-      //   console.log("Screenshotting...")
-    
-      //   await page.screenshot({path: tempFilename + ".png"})
-      //   browser.close()
-    
-        
-    
-      //   console.log("cropping image...")
-      //   await sharp(tempFilename + ".png").extract(bounds).toFile(endFilename + ".png")
-        
-    
-    
-
-      //   console.log("done")
       })()
       
       
       return {
         id: endFilename.split("/").last,
-        done: Promise.resolve() // todo
+        done
       } 
     }
 

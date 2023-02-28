@@ -131,21 +131,23 @@ export default class Site extends Component {
       lastId = undefined
     }
 
+    setTimeout(() => {
+      startDownload()
+    1000})
+
     const result = document.createElement("textarea")
     result.contentEditable = "false"
     result.id = "result"
     result.style.display = "none"
-    result.on("click", startDownload)
     settingsBod.apd(result);
 
 
 
-    const copyBtn = new Button("Copy", startDownload)
-    copyBtn.style.display = "none"
-    settingsBod.apd(copyBtn);
-    copyBtn.addActivationCallback(() => {
+    const copyBtn = new Button("Copy", () => {
       copy(result.value)
     })
+    copyBtn.style.display = "none"
+    settingsBod.apd(copyBtn);
 
 
     
