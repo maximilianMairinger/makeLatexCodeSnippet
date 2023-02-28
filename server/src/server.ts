@@ -382,7 +382,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         if (options.theme === "dark") {
           let triedCount = 0
           let suc = false
-          while (triedCount < 3) {
+          while (triedCount++ < 3) {
             try {
               await clickAddonsTab()
               await type("codesandbox theme")
@@ -398,7 +398,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
             }
             catch (e) {
               await clickExplorerTab()
-              error(`Failed ${triedCount} to install theme dark`)
+              error(`Failed ${triedCount} times to install theme dark`)
             }
           }
 
@@ -412,7 +412,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         else if (options.theme.includes("light")) {
           let triedCount = 0
           let suc = false
-          while (triedCount < 3) {
+          while (triedCount++ < 3) {
             try {    
               await clickAddonsTab()
               await type("atom one light")
@@ -431,7 +431,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
             }
             catch (e) {
               await clickExplorerTab()
-              error(`Failed ${triedCount} to install theme light`)
+              error(`Failed ${triedCount} times to install theme light`)
             }
           }
 
