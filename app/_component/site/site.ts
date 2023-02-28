@@ -1,7 +1,6 @@
 import Component from "../component"
 import declareComponent from "../../lib/declareComponent"
 
-import ajaon from "ajaon"
 import edom from "extended-dom"
 import download from "downloadar"
 import input from "./../input/input"
@@ -13,7 +12,6 @@ import { ExportedFunctions as ExportedServerFunctions } from "../../../server/sr
 
 
 
-const { post, get } = ajaon();
 
 
 const pxToPt = (() => {
@@ -171,6 +169,8 @@ declareComponent("site", Site)
 const logDisplay = new LogDisplay()
 const ws = new WebSocket(normalizeWsUrlProtocol("/ws"))
 export const webLog = functionBasedWsServer("/" as any, bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
+
+webLog.log("lel")
 
 const server = functionBasedWsClient<ExportedServerFunctions>(ws as any)
 

@@ -17,7 +17,7 @@ jobs:
     - name: Setting up node
       uses: actions/setup-node@master
       with:
-        node-version: '15.x'
+        node-version: '18.x'
 
     - name: Installing runner dependencies
       run: npm i
@@ -77,7 +77,7 @@ jobs:
         script: |
           cd /var/www/html/makeLatexCodeSnippet/dev
           source ~/.nvm/nvm.sh
-          nvm use 15.11.0
+          nvm use default
           npm i
 
   deploy: 
@@ -95,6 +95,6 @@ jobs:
         script: |
           cd /var/www/html/makeLatexCodeSnippet/dev
           source ~/.nvm/nvm.sh
-          nvm use 15.11.0
+          nvm use default
           wait-on ecosystem.config.js
           node pm2Reload.js

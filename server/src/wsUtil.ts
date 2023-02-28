@@ -76,6 +76,7 @@ export function functionBasedWsClient<FunctionMap extends {[key in string]: (...
       }
     })
   }
+  
 
   return new Proxy({}, {
     get(target, prop: string) {
