@@ -197,7 +197,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
         const browser = await puppeteer.launch({ 
-          headless: true,
+          headless: false,
           args: ['--no-sandbox']
         })
         const page = await browser.newPage()
@@ -509,7 +509,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               if (maxWidth < line.offsetWidth) maxWidth = line.offsetWidth
             })
       
-            const firstLine = lineBody.querySelector("div > div > span") as HTMLSpanElement
+            const firstLine = lineBody.querySelector("div > div") as HTMLSpanElement
       
             let lineHeight = firstLine ? firstLine.offsetHeight : (fontSize + 3) 
       
@@ -529,7 +529,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         catch(e) {
           error(`Unable to get code bounds, hence cannot crop image. Continuing...`)
         }
-        
+        await delay(10000000)
 
 
         console.log(bounds)
