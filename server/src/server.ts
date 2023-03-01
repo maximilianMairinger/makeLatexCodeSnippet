@@ -276,6 +276,13 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         }
 
 
+        let progressScreenshotCount = 1
+        const progressScreenshot = async () => {
+          const fileName = `public/progress-${progressScreenshotCount++}.png`
+          await page.screenshot({path: fileName})
+        }
+
+
 
         const clickExplorerTab = async () => {
           await click("#workbench\\.parts\\.activitybar > div > div.composite-bar > div > ul > li:nth-child(1) > a")
@@ -343,9 +350,11 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await cmd("open user settings json")
         await delay(200)
         await deleteAll()
+        await progressScreenshot()
         await delay(100)
 
         await type(JSON.stringify(editorConfig))
+        await progressScreenshot()
         await delay(2000)
 
         log(`Writing your code to file`)
@@ -353,15 +362,18 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await cmd("new file")
         await delay(50)
         await enter()
+        await progressScreenshot()
         
         await delay(100)
         await type(source)
+        await progressScreenshot()
 
         log(`Setting language`)
 
         await cmd("change language mode")
         await type(fileExtensionsToLang[options.lang])
         await enter()
+        await progressScreenshot()
 
         await delay(500)
 
@@ -409,13 +421,16 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               await clickAddonsTab()
               await type("atom one light")
               await delay(4000)
+              await progressScreenshot()
               
 
 
               await click(".monaco-list-rows > :first-child > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
               await delay(2000)
+              await progressScreenshot()
               await click(".quick-input-list .monaco-list-rows > :first-child")
               await delay(200)
+              await progressScreenshot()
               await cmdW()
               suc = true
               break
@@ -442,17 +457,19 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           while(triedCount++ < 3) {
             try {
               await clickExplorerTab()
-              await delay(20)
+              await delay(200)
               await clickAddonsTab()
               await deleteAll()
               await type("prettier")
               await delay(4000)
+              await progressScreenshot()
               await click(".monaco-list-rows > :first-child > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
               await delay(2000)
-              await delay(200)
+              await progressScreenshot()
               await cmdW()
               await delay(500)
               await cmd("format document force")
+              await progressScreenshot()
               suc = true
               break
             }
