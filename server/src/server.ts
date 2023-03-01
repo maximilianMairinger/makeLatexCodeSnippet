@@ -198,7 +198,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         
 
         const browser = await puppeteer.launch({ 
-          headless: true,
+          headless: false,
           args: ['--no-sandbox']
         })
 
@@ -241,9 +241,13 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         const openCmdPallet = async () => {
           await cmdKey.down()
+          await delay(100)
           await page.keyboard.down('ShiftLeft')
+          await delay(100)
           await page.keyboard.press('P')
+          await delay(100)
           await page.keyboard.up('ShiftLeft')
+          await delay(100)
           await cmdKey.up()
         }
 
