@@ -7,7 +7,6 @@ import uidHash from "uid-safe"
 import { promises as fs } from "fs"
 import slugify from "slugify"
 import makeDir from "mkdirp"
-import clip from "clipboardy"
 import { port as vsCodePort } from "./vscode"
 import { functionBasedWsClient, functionBasedWsServer, FunctionMapWithPromisesAsReturnType, WebSocket } from "./wsUtil"
 import os from "os"
@@ -199,7 +198,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         
 
         const browser = await puppeteer.launch({ 
-          headless: true,
+          headless: false,
           args: ['--no-sandbox']
         })
 
@@ -209,16 +208,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         const activeElement = async () => await page.evaluateHandle(() => document.activeElement) as any
         const type = async (text: string, ms?: number) => await (await activeElement()).type(text, ms ? {delay: ms} : undefined)
 
-        const paste = async (text: string) => {
-          const before = await clip.read()
-          await clip.write(text)
-          await page.keyboard.down('Control');
-          await page.keyboard.down('Shift');
-          await page.keyboard.press('KeyV');
-          await page.keyboard.up('Control');
-          await page.keyboard.up('Shift');
-          await clip.write(before)
-        }
+
 
         const cmdW = async () => {
           await cmdKey.down()
@@ -386,11 +376,12 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
             try {
               await clickAddonsTab()
               await type("codesandbox theme")
+
+              await delay(10000000)
               await delay(4000)
-              // document.querySelector("#list_id_7_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
-              await click("#list_id_7_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+              await click(".monaco-list-rows > :first-child > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
               await delay(2000)
-              await click("#list_id_2_2 > div > label > div > div:nth-child(1) > div.monaco-icon-label > div")
+              await click(".quick-input-list .monaco-list-rows > :nth-child(3)")
               await delay(2000)
               await cmdW()
               suc = true
@@ -420,11 +411,10 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               await delay(4000)
               
 
-              
-              // document.querySelector("#list_id_8_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
-              await click("#list_id_8_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+
+              await click(".monaco-list-rows > :first-child > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
               await delay(2000)
-              await click("#list_id_1_0 > div > label > div > div:nth-child(1) > div.monaco-icon-label > div")
+              await click(".quick-input-list .monaco-list-rows > :first-child")
               await delay(200)
               await cmdW()
               suc = true
@@ -457,7 +447,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               await deleteAll()
               await type("prettier")
               await delay(4000)
-              await click("#list_id_12_0 > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
+              await click(".monaco-list-rows > :first-child > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
               await delay(2000)
               await delay(200)
               await cmdW()
