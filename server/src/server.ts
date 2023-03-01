@@ -256,6 +256,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         const cmd = async (cmd: string) => {
           await openCmdPallet()
+          await delay(100)
           await type(cmd)
           await delay(150)
           await enter()
@@ -341,13 +342,14 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         await page.waitForSelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div > div.monaco-scrollable-element.full-height-scrollable.categoriesScrollbar > div.gettingStartedSlideCategories.gettingStartedSlide > div > div.categories-column.categories-column-left > div.index-list.start-container > div > ul > li:nth-child(1) > button")
 
-        await delay(3000)
+        await delay(5000)
 
 
         log(`Setting user settings`)
         
 
         await cmd("open user settings json")
+        await progressScreenshot()
         await delay(200)
         await deleteAll()
         await progressScreenshot()

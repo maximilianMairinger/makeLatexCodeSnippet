@@ -4,6 +4,7 @@ dist/
 .DS_Store
 .idea*
 
+
 package-lock.json
 
 public/sw.js
@@ -23,3 +24,5 @@ public/renders
 xcenic.com
 vscode.dev
 vscode.dev.zip
+
+public/progress-*.png
