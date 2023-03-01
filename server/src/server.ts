@@ -18,6 +18,9 @@ const isMacOs = os.platform() === 'darwin'
 
 
 
+
+
+
 const editorConfig = {
   "editor.formatOnSave": false,
   "editor.fontSize": 18,
@@ -198,7 +201,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         
 
         const browser = await puppeteer.launch({ 
-          headless: true,
+          headless: "new",
           args: ['--no-sandbox']
         })
 
@@ -210,10 +213,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
 
-        const cmdW = async () => {
-          await cmdKey.down()
-          await page.keyboard.press('KeyW')
-          await cmdKey.up()
+        const closeEditor = async () => {
+          await cmd("workbench.action.closeActiveEditor")
         }
 
 
@@ -228,35 +229,14 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
 
-        const cmdKey = {
-          async down() {
-            if (isMacOs) await page.keyboard.down('MetaLeft')
-            else await page.keyboard.down('ControlLeft')
-          },
-          async up() {
-            if (isMacOs) await page.keyboard.up('MetaLeft')
-            else await page.keyboard.up('ControlLeft')
-          }
-        }
 
         const openCmdPallet = async () => {
-          await cmdKey.down()
-          await delay(100)
-          await page.keyboard.down('ShiftLeft')
-          await delay(100)
-          await page.keyboard.press('P')
-          await delay(100)
-          await page.keyboard.up('ShiftLeft')
-          await delay(100)
-          await cmdKey.up()
+          await mouseClick(20, viewPortOptions.height - 50)
+          await delay(1000)
+          await mouseClick(100, viewPortOptions.height - 285)
         }
 
-        const openSettings = async () => {
-          await cmdKey.down()
-          await page.keyboard.press("Comma")
-          await cmdKey.up()
-          await delay(1500)
-        }
+
 
         const cmd = async (cmd: string) => {
           await openCmdPallet()
@@ -269,14 +249,12 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
 
-        const cmdA = async () => {
-          await cmdKey.down()
-          await page.keyboard.press('KeyA')
-          await cmdKey.up()
+        const selectAll = async () => {
+          await cmd("select all")
         }
 
         const deleteAll = async () => {
-          await cmdA()
+          await selectAll()
           await page.keyboard.press("Backspace")
         }
 
@@ -306,16 +284,46 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           await page.keyboard.press("Enter")
         }
 
+        await page.evaluate(() => {
+          
+        })
 
-        const addEmptyLinesAtEnd = async (lines: number) => {
+        const mouseClick = async (x: number, y: number) => {
+
+
+          // page.evaluate((x, y) => {
+          //   (window as any).lastCordIndec = null
+          //   function createCoordIndecator(x, y) {
+          //     if ((window as any).lastCordIndec) (window as any).lastCordIndec.remove()
+          //     const div = document.createElement("div");
+          //     (window as any).lastCordIndec = div;
+          //     div.style.position = "absolute"
+          //     div.style.left = x + "px"
+          //     div.style.top = y + "px"
+          //     div.style.width = "10px"
+          //     div.style.height = "10px"
+          //     div.style.backgroundColor = "red"
+          //     div.style.zIndex = "100000"
+          //     div.style.pointerEvents = "none"
+          //     document.body.appendChild(div)
+          //   }
+          
+          // createCoordIndecator(x, y)
+          // }, x, y)
+          // await delay(1000)
+          await page.mouse.move(x, y)
+          await page.mouse.click(x, y)
+        }
+
+
+
+
+        const addEmptyLines = async (lines: number) => {
           let txt = ""
           for (let i = 0; i < lines; i++) {
             txt += "\n"
           }
-          // go to end of file
-          await cmdKey.down()
-          await page.keyboard.press("End")
-          await cmdKey.up()
+
           await type(txt)
         }
 
@@ -327,11 +335,12 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
     
 
-        await page.setViewport({
+        const viewPortOptions = {
           width: 1610,
           height: 780 + ((editorConfig["editor.fontSize"] + 3) * estimateLinesOfSource),
           deviceScaleFactor: options.resolutionFactor
-        });
+        }
+        await page.setViewport(viewPortOptions);
         console.log("Loading site...")
 
 
@@ -347,6 +356,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await page.waitForSelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div > div.monaco-scrollable-element.full-height-scrollable.categoriesScrollbar > div.gettingStartedSlideCategories.gettingStartedSlide > div > div.categories-column.categories-column-left > div.index-list.start-container > div > ul > li:nth-child(1) > button")
 
         await delay(5000)
+
+
 
 
         log(`Setting user settings`)
@@ -410,7 +421,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               await delay(2000)
               await click(".quick-input-list .monaco-list-rows > :nth-child(3)")
               await delay(2000)
-              await cmdW()
+              await closeEditor()
               suc = true
               break
             }
@@ -446,7 +457,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               await click(".quick-input-list .monaco-list-rows > :first-child")
               await delay(200)
               await progressScreenshot()
-              await cmdW()
+              await closeEditor()
               suc = true
               break
             }
@@ -481,7 +492,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               await click(".monaco-list-rows > :first-child > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
               await delay(2000)
               await progressScreenshot()
-              await cmdW()
+              await closeEditor()
               await delay(500)
               await cmd("format document force")
               await progressScreenshot()
@@ -500,7 +511,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           
         }
 
-        await addEmptyLinesAtEnd(1)
+        await addEmptyLines(1)
 
         
         await delay(200)
