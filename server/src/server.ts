@@ -399,6 +399,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
             catch (e) {
               await clickExplorerTab()
               error(`Failed ${triedCount} times to install theme dark`)
+              console.error(e)
             }
           }
 
@@ -432,6 +433,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
             catch (e) {
               await clickExplorerTab()
               error(`Failed ${triedCount} times to install theme light`)
+              console.error(e)
             }
           }
 
