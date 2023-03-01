@@ -198,7 +198,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         
 
         const browser = await puppeteer.launch({ 
-          headless: false,
+          headless: true,
           args: ['--no-sandbox']
         })
 
