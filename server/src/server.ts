@@ -347,6 +347,15 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
         log(`Setting user settings`)
         
+        await openCmdPallet()
+        await delay(1000)
+        await progressScreenshot()
+        await type("open user settings json")
+        await delay(1000)
+        await progressScreenshot()
+        await enter()
+        await delay(1000)
+        await progressScreenshot()
 
         await cmd("open user settings json")
         await progressScreenshot()
