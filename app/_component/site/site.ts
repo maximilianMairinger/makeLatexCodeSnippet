@@ -50,11 +50,14 @@ export default class Site extends Component {
     const name = input("Name")
     settingsBod.apd(name)
 
+    const maxWidth = input("Max Width", "number", undefined, 1000)
+    settingsBod.apd(maxWidth)
+
 
     const resolution = input("Resolution Factor", "integer", undefined, 3)
     settingsBod.apd(resolution)
 
-    const lang = input("Language extension", undefined, undefined, "js")
+    const lang = input("Language extension", undefined, undefined, "ts")
     settingsBod.apd(lang)
 
     const numbersBody = ce("numbers-body")
@@ -89,6 +92,10 @@ export default class Site extends Component {
     themeBody.apd(theme as any)
 
     
+    setInterval(() => {
+      console.log(typeof maxWidth.value(), maxWidth.value())
+    }, 1000)
+
     let curNameValue: string
     const btnContainer = ce("btn-container")
     const btn = new Button("Lets go", async () => {
@@ -99,7 +106,8 @@ export default class Site extends Component {
         lang: lang.value(),
         autoFormat: format.checked,
         theme: theme.value as "dark" | "light-pure" | "light-offwhite",
-        name: name.value() || undefined
+        name: name.value() || undefined,
+        width: (maxWidth.value() !== "" && !isNaN(+maxWidth.value())) ? +maxWidth.value() : undefined
       })
 
       startDownload(id)

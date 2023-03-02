@@ -119,10 +119,16 @@ async function constrIncFileHash(path: string, filename: string | (() => string)
   return constrIncHash((filename instanceof Function ? () => path + filename() : path + filename), postFix, (await fs.readdir(path)).length)
 }
 
-type RenderOptions = {lang?: string, theme?: "dark" | "light-pure" | "light-offwhite", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number, name?: string }
+type RenderOptions = {lang?: string, theme?: "dark" | "light-pure" | "light-offwhite", numbers?: boolean, autoFormat?: boolean, resolutionFactor?: number, name?: string, width?: number }
 export type ExportedFunctions = FunctionMapWithPromisesAsReturnType<{
   renderPls: (src: string, options: RenderOptions) => Promise<string>
 }>
+
+
+
+const minWidth = 350
+const numbersWith = 86
+const sideNavWidth = 48
 
 
 import { webLog as WebTypes } from "../../app/_component/site/site"
@@ -201,8 +207,9 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         
 
         const browser = await puppeteer.launch({ 
-          headless: "new",
-          args: ['--no-sandbox']
+          headless: false,
+          args: ['--no-sandbox'],
+          devtools: true
         })
 
         const page = await browser.newPage()
@@ -284,9 +291,6 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           await page.keyboard.press("Enter")
         }
 
-        await page.evaluate(() => {
-          
-        })
 
         const mouseClick = async (x: number, y: number) => {
 
@@ -316,6 +320,10 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         }
 
 
+        const hideSidebar = async () => {
+          await cmd("close primary side bar")
+        }
+
 
 
         const addEmptyLines = async (lines: number) => {
@@ -333,11 +341,16 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         const estimateLinesOfSource = Math.ceil(source.length / averageCharactersPerLine)
         
 
-    
+        
+
+
+        if ((options.width + numbersWith + sideNavWidth) < minWidth) {
+          options.width = minWidth - numbersWith - sideNavWidth
+        }
 
         const viewPortOptions = {
-          width: 1610,
-          height: 780 + ((editorConfig["editor.fontSize"] + 3) * estimateLinesOfSource),
+          width: options.width + numbersWith + sideNavWidth,
+          height: 400 + ((editorConfig["editor.fontSize"] + 3) * estimateLinesOfSource),
           deviceScaleFactor: options.resolutionFactor
         }
         await page.setViewport(viewPortOptions);
@@ -351,6 +364,9 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         await page.goto(`http://127.0.0.1:${await vsCodePort}`)
 
         await page.reload()
+
+
+        
 
 
         await page.waitForSelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div > div.monaco-scrollable-element.full-height-scrollable.categoriesScrollbar > div.gettingStartedSlideCategories.gettingStartedSlide > div > div.categories-column.categories-column-left > div.index-list.start-container > div > ul > li:nth-child(1) > button")
@@ -530,7 +546,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
           
         }
 
-
+        await hideSidebar()
 
         log(`Getting code bounds`)
 
@@ -663,7 +679,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
     theme: "light",
     numbers: false,
     autoFormat: true,
-    resolutionFactor: 1
+    resolutionFactor: 1,
+    width: 1000
   }
 
 
@@ -672,7 +689,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
     theme: (t) => t === "light" || t === "dark",
     numbers: (e) => typeof e === "boolean",
     autoFormat: (e) => typeof e === "boolean",
-    resolutionFactor: (e) => typeof e === "number" && e <= 20 && e >= 1
+    resolutionFactor: (e) => typeof e === "number" && e <= 20 && e >= 1,
+    width: (e) => typeof e === "number" && e <= 20000 && e >= minWidth,
   }
 
   function optionsTypechecking(options: any) {
