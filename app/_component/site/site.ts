@@ -91,10 +91,6 @@ export default class Site extends Component {
     settingsBod.apd(themeBody)
     themeBody.apd(theme as any)
 
-    
-    setInterval(() => {
-      console.log(typeof maxWidth.value(), maxWidth.value())
-    }, 1000)
 
     let curNameValue: string
     const btnContainer = ce("btn-container")
@@ -107,7 +103,7 @@ export default class Site extends Component {
         autoFormat: format.checked,
         theme: theme.value as "dark" | "light-pure" | "light-offwhite",
         name: name.value() || undefined,
-        width: (maxWidth.value() !== "" && !isNaN(+maxWidth.value())) ? +maxWidth.value() : undefined
+        width: ((maxWidth.value() !== "" && !isNaN(+maxWidth.value())) ? +maxWidth.value() : undefined) as number
       })
 
       startDownload(id)
