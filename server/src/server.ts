@@ -207,9 +207,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         
 
         const browser = await puppeteer.launch({ 
-          headless: false,
-          args: ['--no-sandbox'],
-          devtools: true
+          headless: "new",
+          args: ['--no-sandbox']
         })
 
         const page = await browser.newPage()
@@ -376,17 +375,8 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
 
 
 
+
         log(`Setting user settings`)
-        
-        await openCmdPallet()
-        await delay(1000)
-        await progressScreenshot()
-        await type("open user settings json")
-        await delay(1000)
-        await progressScreenshot()
-        await enter()
-        await delay(1000)
-        await progressScreenshot()
 
         await cmd("open user settings json")
         await progressScreenshot()
@@ -431,7 +421,6 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
               await clickAddonsTab()
               await type("codesandbox theme")
 
-              await delay(10000000)
               await delay(4000)
               await click(".monaco-list-rows > :first-child > div.extension-list-item > div.details > div.footer > div.monaco-action-bar > ul > li:nth-child(5) > a")
               await delay(2000)
@@ -553,7 +542,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
         let bounds: any
         try {
           bounds = await page.evaluate((numbers, fontSize) => {
-            const lineBody = document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text")
+            const lineBody = document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text")
             const rect = lineBody.getBoundingClientRect()
             const lines = lineBody.querySelectorAll("div > div > span") as NodeListOf<HTMLElement>
             const linesOfSource = lines.length - 2
@@ -567,7 +556,7 @@ import { webLog as WebTypes } from "../../app/_component/site/site"
       
             let lineHeight = firstLine ? firstLine.offsetHeight : (fontSize + 3) 
       
-            const numbersWidth = numbers === undefined ? (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div:nth-child(1)") as HTMLElement).offsetWidth : 0
+            const numbersWidth = numbers ? (document.querySelector("#workbench\\.parts\\.editor > div.content > div > div > div > div > div.monaco-scrollable-element > div.split-view-container > div > div > div.editor-container > div > div > div.overflow-guard > div:nth-child(1)") as HTMLElement).offsetWidth : 0
             
             
             
