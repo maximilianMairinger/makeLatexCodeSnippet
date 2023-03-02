@@ -50,8 +50,14 @@ export default class Site extends Component {
     const name = input("Name")
     settingsBod.apd(name)
 
-    const maxWidth = input("Max Width", "number", undefined, 1000)
+    const maxWidth = input("Max Width", "number", undefined, 1000, (val) => {
+      if (isNaN(+val)) return "Must be a number"
+      if (+val < 0) return "Must be positive"
+      if (+val > 20000) return "Must be less than 20000"
+      if (Math.round(+val) !== +val) return "Must be an integer"
+    })
     settingsBod.apd(maxWidth)
+
 
 
     const resolution = input("Resolution Factor", "integer", undefined, 3)
@@ -172,7 +178,7 @@ declareComponent("site", Site)
 
 const logDisplay = new LogDisplay()
 const ws = new WebSocket(normalizeWsUrlProtocol("/ws"))
-export const webLog = functionBasedWsServer("/" as any, bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
+export const webLog = functionBasedWsServer(ws as any, bindInstanceFuncs(logDisplay, ["log", "error", "ask"]))
 
 const server = functionBasedWsClient<ExportedServerFunctions>(ws as any)
 

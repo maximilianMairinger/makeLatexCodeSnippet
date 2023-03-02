@@ -52,6 +52,7 @@ export function functionBasedWsServer<FunctionMap extends {[key in string]: (...
   return functions as FunctionMapWithPromisesAsReturnType<FunctionMap>
 }
 
+
 export function functionBasedWsClient<FunctionMap extends {[key in string]: (...a: unknown[]) => unknown}>(ws: WebSocket | Promise<WebSocket>) {
   const returnMap = new Map<number, Function>()
   let id = 0
